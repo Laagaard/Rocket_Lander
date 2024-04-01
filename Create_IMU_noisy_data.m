@@ -21,7 +21,6 @@ hold on
 plot(AccelerationData(:,1),AccelerationData(:,5))
 plot(AccelerationData(:,1),AccelerationData(:,6))
 plot(AccelerationData(:,1),AccelerationData(:,7))
-ylabel('Angular Acceleration (rad/s^2)'); xlabel('time (s)'); title('Gyroscope Angular Acceleration Data')
-legend('\alpha_x_b (rad/s^2)','\alpha_y_b (rad/s^2)','\alpha_z_b (rad/s^2)','location','NorthEast')
-
+ylabel('Angular Velocity (rad/s)'); xlabel('time (s)'); title('Gyroscope Angular Velocity Data')
+legend('\omega_x_b (rad/s)','\omega_y_b (rad/s)','\omega_z_b (rad/s)','location','NorthEast')
 save("Acceleration Data", "AccelerationData")
