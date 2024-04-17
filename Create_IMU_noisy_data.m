@@ -4,10 +4,21 @@
 clc; clear; close all; format compact;
 Simulation_Time = 13; %s
 sim('RocketLander_version3.mdl',Simulation_Time)
-AccelerationData = load('IMU_noisy_data.mat')
-AccelerationData = struct2array(AccelerationData)
-AccelerationData = AccelerationData';
-AccelerationData
+
+AccelerationData = load('Non_Noisy_Data.mat');
+AccelerationData = struct2array(AccelerationData);
+AccelerationData = AccelerationData'
+
+acc = AccelerationData(:,2:4); %m/s
+angVel = AccelerationData(:,5:7); %rad/s
+IMU = imuSensor('accel-gyro');
+IMU.SampleRate = 100; % hz
+IMU.Accelerometer.NoiseDensity = [1 0 1]*0.1;
+IMU.Gyroscope.NoiseDensity = [0 1 0]*0.001;
+[accelReadings,gyroReadings] = IMU(-acc,-angVel)
+
+AccelerationData = [AccelerationData(:,1) accelReadings gyroReadings];
+
 figure
 hold on
 plot(AccelerationData(:,1),AccelerationData(:,2))
