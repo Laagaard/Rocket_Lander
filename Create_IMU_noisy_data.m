@@ -2,22 +2,23 @@
 % AEE 3150 Team Project
 % March 28, 2024
 clc; clear; close all; format compact;
+Simulation_Time = 13; %s
+sim('RocketLander_version3_ACT.slx',Simulation_Time)
 
-t = readmatrix('Altitude Calculations_angles.xlsx','Range','Q2:Q1580');
-ax = readmatrix('Altitude Calculations_angles.xlsx','Range','ad2:ad1580');
-ay = 0*ax;
-az = readmatrix('Altitude Calculations_angles.xlsx','Range','ae2:ae1580');
+AccelerationData = load('Non_Noisy_Data.mat');
+AccelerationData = struct2array(AccelerationData);
+% time      linear acceleration         angular velocity (all clean)
+AccelerationData = AccelerationData'
 
-acc = [ax ay az-9.806];
-angVel = [ay ay ay];
-
+acc = AccelerationData(:,2:4); %m/s
+angVel = AccelerationData(:,5:7); %rad/s
 IMU = imuSensor('accel-gyro');
 IMU.SampleRate = 100; % hz
-IMU.Accelerometer.NoiseDensity = [1 1 1]*0.5;
-IMU.Gyroscope.NoiseDensity = [1 1 1]*0.5;
-[accelReadings, gyroReadings] = IMU(-acc,-angVel)
+IMU.Accelerometer.NoiseDensity = [1 0 1]*0.1;
+IMU.Gyroscope.NoiseDensity = [0 1 0]*0.001;
+[accelReadings,gyroReadings] = IMU(-acc,-angVel)
 
-AccelerationData = [t accelReadings gyroReadings];
+AccelerationData = [AccelerationData(:,1) accelReadings gyroReadings];
 
 figure
 hold on
@@ -25,7 +26,7 @@ plot(AccelerationData(:,1),AccelerationData(:,2))
 plot(AccelerationData(:,1),AccelerationData(:,3))
 plot(AccelerationData(:,1),AccelerationData(:,4))
 ylabel('Acceleration (m/s^2)'); xlabel('time (s)'); title('Accelerometer Linear Acceleration Data')
-legend('A_x (m/s^2)','A_y (m/s^2)','A_z (m/s^2)','location','NorthEast')
+legend('A_x_b (m/s^2)','A_y_b (m/s^2)','A_z_b (m/s^2)','location','NorthEast')
 
 figure
 hold on
@@ -33,5 +34,5 @@ plot(AccelerationData(:,1),AccelerationData(:,5))
 plot(AccelerationData(:,1),AccelerationData(:,6))
 plot(AccelerationData(:,1),AccelerationData(:,7))
 ylabel('Angular Velocity (rad/s)'); xlabel('time (s)'); title('Gyroscope Angular Velocity Data')
-legend('\omega_x (rad/s)','\omega_y (rad/s)','\omega_z (rad/s)','location','NorthEast')
+legend('\omega_x_b (rad/s)','\omega_y_b (rad/s)','\omega_z_b (rad/s)','location','NorthEast')
 save("Acceleration Data", "AccelerationData")
