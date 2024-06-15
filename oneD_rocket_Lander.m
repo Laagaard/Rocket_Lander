@@ -109,8 +109,6 @@ altitude_optimal = states_optimal(:,1); % m
 velocity_optimal = states_optimal(:,2); % m/s
 mass_optimal = states_optimal(:,3); % kg
 
-indices_optimal = find((altitude_optimal<=0)+(t_optimal>burnTimeAscent(end))==2);
-
 acceleration_optimal = zeros(size(t_optimal)); % m/s^2
 for ctr = 1:length(t_optimal)
     state_dot_optimal = rates2(t_optimal(ctr),states_optimal(ctr,:));
@@ -123,6 +121,8 @@ end
 figure; hold on; xlabel('time (s)'); ylabel('landing velocity (m/s)')
 title('timing of descent motor burn')
 plot(tevaluate,landingVelocity,'.')
+xx=1:50; yy = 1.0007*xx;
+plot(xx,yy,'-r')
 
 figure; hold on; xlabel('time (s)'); ylabel('vertical component'); 
 title('optimal timing of descent motor burn')
