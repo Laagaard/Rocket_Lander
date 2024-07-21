@@ -5,5 +5,6 @@ This is the codebase for the Florida Tech 2024-2025 Aerospace Engineering capsto
 The following is the list of sub-projects included in this project and their respective purposes for the project.
 
 - `diagrams`: contains relevant circuit diagrams, project UML diagrams, etc.
-- `flight_computer`: contains all materials related to and used for the flight computer.
-- `ground_station`: contains all materials related to and used for ground support equipment (i.e., the ground station).
+- `flight_computer`: contains materials related to and used for the flight computer.
+- `ground_station`: contains materials related to and used for ground support equipment (i.e., the ground station).
+- `simulation`: contains materials related to and used for flight simulation and trajectory/mission planning.
