@@ -131,6 +131,62 @@ disp(sprintf('For "optimal" solution:\n\tvertical landing speed = %.2f m/s.',min
 disp(sprintf('\thorizontal landing speed = %.2f m/s.\n\tlanding angle from vertical = %.2f degrees.',[pseudoMinHorizSpeed rad2deg(pseudoMinLandAngle)]))
 save('optimal solution states.mat',"minVertSpeed","pseudoMinHorizSpeed","pseudoMinLandAngle",'-mat')
 toc
+
+%% Dynamic display of solution trajectory
+%{
+T_begin_burn = tevaluate(index);
+
+% calculate trajectory of using optimal timing and use it to plot rocket
+% graphic
+initialIndex = find(abs(tevaluate(index)-twoD_initial(:,1))<=1.25E-4);
+firstHalf_states = twoD_initial(1:initialIndex,:);
+    % IC's
+    y0 = twoD_initial(initialIndex,4); % m
+    ydot0 = twoD_initial(initialIndex,5); % m/s
+    m0 = 1.50 - PropMass_ascent; % kg
+    x0 = twoD_initial(initialIndex,2); % m
+    xdot0 = twoD_initial(initialIndex,3); % m/s
+    theta0 = pi/2 - atan2(ydot0,xdot0); % rad, angle between vertical and velocity direction
+    thetaDot0 = 0; % rad/s
+    errorIntegr0 = 0; % radian-s
+    errorIntegr02 = 0; % m-s
+    tspan = [0 10]; % s
+    options = odeset(MaxStep=0.01);
+    state0 = [x0 xdot0 y0 ydot0 theta0 thetaDot0 m0 errorIntegr0 errorIntegr02];
+[t_secondHalf,secondHalfStates] = ode45(@rates_descent,tspan,state0,options);
+indices_aboveGround = find(secondHalfStates(:,4)>-0.2);
+
+t_graphics = [firstHalf_states(:,1); t_secondHalf(indices_aboveGround)];
+x_graphics = [firstHalf_states(:,2); secondHalfStates(indices_aboveGround,1)];
+xDot_graphics = [firstHalf_states(:,3); secondHalfStates(indices_aboveGround,2)];
+y_graphics = [firstHalf_states(:,4); secondHalfStates(indices_aboveGround,3)];
+yDot_graphics = [firstHalf_states(:,5); secondHalfStates(indices_aboveGround,4)];
+theta_graphics = [firstHalf_states(:,6) secondHalfStates(indices_aboveGround,5)];
+
+figure(4);
+hold on;
+scale = 1;
+width = diam*scale;
+Rocket_length = l_t*scale;
+coneLength = 0.15 * width; % m
+
+x_vertices0 = [-width/2         -width/2        0                            width/2         width/2          -width/2        ];
+y_vertices0 = [-Rocket_length/2 Rocket_length/2 (Rocket_length/2+coneLength) Rocket_length/2 -Rocket_length/2 -Rocket_length/2];
+Rocket = area(x_vertices0,y_vertices0); % initial rocket shape
+XY0 = [x_vertices0; y_vertices0];
+
+for ctr=2:length(t_graphics)
+    R = [cos(theta_graphics(ctr))   sin(theta_graphics(ctr));
+         -sin(theta_graphics(ctr))  cos(theta_graphics(ctr))];
+    XY_graphic = R*XY0;
+    
+    Rocket.XData = XY_graphic(1,:); % update data properties
+    Rocket.YData = XY_graphic(2,:);
+    drawnow  % display updates
+    %pause(1/10)
+end
+%}
+
 %% FUNCTIONS    
 
 function state_dot = rates_descent(t,states)
@@ -183,15 +239,7 @@ function state_dot = rates_descent(t,states)
     else
         phi = 0;
     end
-    
-    
-
-    % if t>=1.5
-    %     phi = u; % rad, insert PID or other controller of phi here
-    % else
-    %     phi = 0;
-    % end
-
+        
     thetaDDot = Tdescent*l_t*sin(phi)/I_zz; % rad/s^2
     Drag = (1/2*rho*(xdot^2 + ydot^2))*S*C_D; % N
     if xdot>=0
