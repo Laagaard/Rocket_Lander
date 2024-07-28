@@ -5,21 +5,18 @@ DART Ground Station Software
 #include <SoftwareSerial.h> // for XBee communication
 #include <LiquidCrystal.h> // for LCD display
 
-SoftwareSerial XBee(NULL,3); // RX pin, TX pin
-
-// Establish pin number for abort pin
-int abort_pin = 4;
-
-// Establish pin number for initiation pin
-int init_pin = 2;
+SoftwareSerial XBee(2,3); // RX pin, TX pin
 
 // Establish pin number for launch pin
-int launch_pin = 6;
+int launch_pin = 5;
+
+// Establish pin number for abort pin
+int abort_pin = 6;
 
 // initialize the library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+const int rs = 13, en = 12, d4 = 11, d5 = 10, d6 = 9, d7 = 8;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 void setup()
 {
@@ -35,22 +32,14 @@ void setup()
   // Set built-in LED as output
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // set up the LCD's number of columns and rows:
+  // Set up the LCD's number of columns and rows
   lcd.begin(16, 2);
 
   lcd.print("Mode: STANDBY");
 }
 
-void initialize()
-{
-  lcd.print("Mode: INITIALIZATION");
-}
-
 void loop()
 {
-  // Read state of initialization pin
-  int init_state = digitalRead(init_pin);
-
   // Read state of launch pin
   int launch_state = digitalRead(launch_pin);
 
@@ -69,9 +58,10 @@ void loop()
     // Print "ABORT" on LCD
     lcd.print("Mode: ABORT");
 
+    // Print "Abort State" on serial monitor
     Serial.println("Abort State");
 
-  // Treat all else as nominal
+  // Treat 1 (pin HIGH) as launch signal
   } else if (launch_state) {
 
     // Clear LCD
@@ -80,22 +70,10 @@ void loop()
     // Print "Mode: LAUNCH" on LCD
     lcd.print("Mode: LAUNCH");
 
+    // Print "Launch State" on serial monitor
     Serial.println("Launch State");
 
-  } else if (init_state) {
-
-    // Send "0" over XBee communication
-    XBee.print(0);
-    
-    // Clear LCD
-    lcd.clear();
-
-    // Enter initialization mode
-    lcd.print("Mode: INIT");
-
-    Serial.println("Init State");
-
-    // initialize();
+    // Treat all else as nominal (STANDBY mode)
   } else {
 
     // Clear LCD
