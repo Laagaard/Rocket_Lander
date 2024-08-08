@@ -1,0 +1,18 @@
+@startwbs team_structure
+*:Project Manager: Brett Lougheed
+Systems Engineer: Nate Tardy;
+
++- Controls
+***_ Kian Jamal (Lead)
+***_ Luke Aagaard
+***_ Jack Ohara
+
+++ Propulsion
++++_ Priscila (Lead)
++++_ McKennah Vale
++++_ Johann Vennink
+
+++ Structures
+***_ Rylen Struthers (Lead)
+***_ Jack Smith
+@endwbs
