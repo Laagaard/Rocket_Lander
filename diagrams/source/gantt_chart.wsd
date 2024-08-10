@@ -1,0 +1,90 @@
+@startgantt gantt_chart
+
+/' Chart Settings '/
+printscale weekly with calendar date
+Project starts 2024-04-07
+today is colored in black
+
+/' --------------------------------- '/
+
+/' Spring 2024 Semester Important Dates '/
+[SRR] happens at 2024-04-15
+Separator just at [SRR]'s end
+
+/' Fall 2024 Semester Important Dates '/
+2024-08-19 to 2024-12-13 is colored in lavender
+2024-08-19 to 2024-12-13 is named [Fall 2024]
+
+[PDR] happens at 2024-11-11 /' Guess for PDR date '/
+Separator just at [PDR]'s end
+[PDR] displays on same row as [SRR]
+
+2024-10-14 to 2024-10-15 is colored in green
+2024-10-14 to 2024-10-15 is named [Fall Break]
+
+2024-11-27 to 2024-11-29 is colored in green
+2024-11-27 to 2024-11-29 is named [Thanksgiving Break]
+
+/' Spring 2025 Semester Important Dates '/
+2025-01-06 to 2025-05-02 is colored in wheat
+2025-01-06 to 2025-05-02 is named [Spring 2025]
+
+[CDR] happens at 2025-03-01 /' Guess for CDR date '/
+Separator just at [CDR]'s end
+[CDR] displays on same row as [SRR]
+
+[Showcase] happens at 2025-04-18 /' Guess for Showcase date '/
+Separator just at [Showcase]'s end
+[Showcase] displays on same row as [SRR]
+
+/' --------------------------------- '/
+
+/' Spring 2024 Tasks '/
+
+[SRR Slides] requires 1 week and starts 2024-04-07 and is colored in deepskyblue
+[SRD Document] requires 3 weeks and starts 2024-04-07 and is colored in deepskyblue
+
+/' Summer 2024 Tasks '/
+
+[Pick control fin shape] requires 2 weeks and starts 2024-04-28 and is colored in lightgreen
+[Motor trade study] requires 6 weeks and starts 2024-04-28 and is colored in plum
+[Fin material trade study] requires 6 weeks and starts 2024-04-28 and is colored in silver
+[Airframe trade study] requires 4 weeks and starts 2024-05-19 and is colored in silver
+[Design control fins] requires 6 weeks and starts 2024-06-02 and is colored in silver
+[Design landing leg deployment mechanism] requires 10 weeks and starts 2024-06-02 and is colored in silver
+[Design landing legs] requires 11 weeks and starts at 2024-06-02 and is colored in silver
+[Design throttling mechanism] requires 14 weeks and starts 2024-04-28 and is colored in plum
+[Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-28 and is colored in silver
+[Write control software] requires 14 weeks and starts 2024-04-28 and is colored in lightgreen
+[Design controller] requires 16 weeks and starts 2024-04-28 and is colored in lightgreen
+[Design flight computer] requires 16 weeks and starts 2024-04-28 and is colored in lightgreen
+
+/' Fall 2024 Tasks '/
+
+[Establish vehicle layout] requires 2 weeks and starts 2024-08-19 and is colored in deepskyblue
+[Design TVC mount] requires 2 weeks and starts 2024-08-19 and is colored in silver
+[Design motor test stand] requires 2 weeks and starts 2024-08-19 and is colored in silver
+[Build motor test stand] requires 2 weeks and starts at [Design motor test stand]'s end and is colored in silver
+[Test control SW] requires 6 weeks and starts at [Write control software]'s end and is colored in lightgreen
+[Assemble FC] requires 4 weeks and starts at [Design flight computer]'s end and is colored in lightgreen
+[Assemble TVC] requires 3 weeks and starts at [Design TVC mount]'s end and is colored in deepskyblue
+[Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in silver
+[Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
+[Build & test landing legs] requires 6 weeks and starts at [Design landing legs]'s end and is colored in silver
+[Assemble vehicle] requires 5 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
+[Abort system test] happens at [Assemble vehicle]'s end
+[Prepare for IFT-1] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
+[IFT-1] happens at [Prepare for IFT-1]'s end
+
+/' --------------------------------- '/
+
+legend
+Legend:
+|= Color |= Task Type |
+|<#deepskyblue> | Team |
+|<#lightgreen> | Controls |
+|<#plum> | Propulsion |
+|<#silver> | Structures |
+end legend
+
+@endgantt
