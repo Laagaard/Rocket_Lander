@@ -63,12 +63,12 @@ Separator just at [Showcase]'s end
 
 [Establish vehicle layout] requires 2 weeks and starts 2024-08-19 and is colored in deepskyblue
 [Design TVC mount] requires 2 weeks and starts 2024-08-19 and is colored in silver
-[Design motor test stand] requires 2 weeks and starts 2024-08-19 and is colored in silver
-[Build motor test stand] requires 2 weeks and starts at [Design motor test stand]'s end and is colored in silver
+[Design motor test stand] requires 2 weeks and starts 2024-08-19 and is colored in plum
+[Build motor test stand] requires 3 weeks and starts at [Design motor test stand]'s end and is colored in plum
 [Test control SW] requires 6 weeks and starts at [Write control software]'s end and is colored in lightgreen
 [Assemble FC] requires 4 weeks and starts at [Design flight computer]'s end and is colored in lightgreen
 [Assemble TVC] requires 3 weeks and starts at [Design TVC mount]'s end and is colored in deepskyblue
-[Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in silver
+[Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
 [Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
 [Build & test landing legs] requires 6 weeks and starts at [Design landing legs]'s end and is colored in silver
 [Assemble vehicle] requires 5 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
