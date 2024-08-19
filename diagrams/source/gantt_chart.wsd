@@ -52,11 +52,11 @@ Separator just at [Showcase]'s end
 [Airframe trade study] requires 4 weeks and starts 2024-05-20 and is colored in silver
 [Design landing leg deployment mechanism] requires 10 weeks and starts 2024-06-03 and is colored in silver
 [Design landing legs] requires 11 weeks and starts at 2024-06-03 and is colored in silver
-[Design throttling mechanism] requires 14 weeks and starts 2024-04-29 and is colored in plum
+[Research throttling mechanism] requires 14 weeks and starts 2024-04-29 and is colored in plum
 [Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-29 and is colored in silver
-[Write control software] requires 14 weeks and starts 2024-04-29 and is colored in lightgreen
-[Design controller] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
+[Write simulation software] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
 [Design flight computer] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
+
 
 /' Fall 2024 Tasks '/
 
@@ -64,7 +64,8 @@ Separator just at [Showcase]'s end
 [Design TVC mount] requires 2 weeks and starts 2024-08-19 and is colored in silver
 [Design motor test stand] requires 2 weeks and starts 2024-08-19 and is colored in plum
 [Build motor test stand] requires 3 weeks and starts at [Design motor test stand]'s end and is colored in plum
-[Test control SW] requires 6 weeks and starts at [Write control software]'s end and is colored in lightgreen
+[Refine simulation software] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
+[Write control SW] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
 [Assemble FC] requires 4 weeks and starts at [Design flight computer]'s end and is colored in lightgreen
 [Assemble TVC] requires 3 weeks and starts at [Design TVC mount]'s end and is colored in deepskyblue
 [Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
@@ -76,6 +77,9 @@ Separator just at [Showcase]'s end
 [Ascent Test] happens at [Prepare for Ascent Test]'s end
 [Prepare for Landing Test] requires 1 weeks and starts at [Prepare for Ascent Test]'s end and is colored in deepskyblue
 [Landing Test] happens at [Fall Break]'s start
+
+[Design landing leg deployment mechanism] -> [Build & test landing legs]
+[Build motor test stand] -> [Test TVC]
 
 /' --------------------------------- '/
 
