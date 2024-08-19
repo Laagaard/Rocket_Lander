@@ -41,23 +41,22 @@ Separator just at [Showcase]'s end
 
 /' Spring 2024 Tasks '/
 
-[SRR Slides] requires 1 week and starts 2024-04-07 and is colored in deepskyblue
-[SRD Document] requires 3 weeks and starts 2024-04-07 and is colored in deepskyblue
+[SRR Slides] requires 1 week and starts 2024-04-08 and is colored in deepskyblue
+[SRD Document] requires 3 weeks and starts 2024-04-08 and is colored in deepskyblue
 
 /' Summer 2024 Tasks '/
 
-[Pick control fin shape] requires 2 weeks and starts 2024-04-28 and is colored in lightgreen
-[Motor trade study] requires 6 weeks and starts 2024-04-28 and is colored in plum
-[Fin material trade study] requires 6 weeks and starts 2024-04-28 and is colored in silver
-[Airframe trade study] requires 4 weeks and starts 2024-05-19 and is colored in silver
-[Design control fins] requires 6 weeks and starts 2024-06-02 and is colored in silver
-[Design landing leg deployment mechanism] requires 10 weeks and starts 2024-06-02 and is colored in silver
-[Design landing legs] requires 11 weeks and starts at 2024-06-02 and is colored in silver
-[Design throttling mechanism] requires 14 weeks and starts 2024-04-28 and is colored in plum
-[Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-28 and is colored in silver
-[Write control software] requires 14 weeks and starts 2024-04-28 and is colored in lightgreen
-[Design controller] requires 16 weeks and starts 2024-04-28 and is colored in lightgreen
-[Design flight computer] requires 16 weeks and starts 2024-04-28 and is colored in lightgreen
+[Pick control fin shape] requires 2 weeks and starts 2024-04-29 and is colored in lightgreen
+[Motor trade study] requires 6 weeks and starts 2024-04-29 and is colored in plum
+[Fin material trade study] requires 6 weeks and starts 2024-04-29 and is colored in silver
+[Airframe trade study] requires 4 weeks and starts 2024-05-20 and is colored in silver
+[Design landing leg deployment mechanism] requires 10 weeks and starts 2024-06-03 and is colored in silver
+[Design landing legs] requires 11 weeks and starts at 2024-06-03 and is colored in silver
+[Design throttling mechanism] requires 14 weeks and starts 2024-04-29 and is colored in plum
+[Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-29 and is colored in silver
+[Write control software] requires 14 weeks and starts 2024-04-29 and is colored in lightgreen
+[Design controller] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
+[Design flight computer] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
 
 /' Fall 2024 Tasks '/
 
@@ -71,10 +70,12 @@ Separator just at [Showcase]'s end
 [Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
 [Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
 [Build & test landing legs] requires 6 weeks and starts at [Design landing legs]'s end and is colored in silver
-[Assemble vehicle] requires 5 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
+[Assemble vehicle] requires 4 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
 [Abort system test] happens at [Assemble vehicle]'s end
-[Prepare for IFT-1] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
-[IFT-1] happens at [Prepare for IFT-1]'s end
+[Prepare for Ascent Test] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
+[Ascent Test] happens at [Prepare for Ascent Test]'s end
+[Prepare for IFT-1] requires 1 weeks and starts at [Prepare for Ascent Test]'s end and is colored in deepskyblue
+[IFT-1] happens at [Fall Break]'s start
 
 /' --------------------------------- '/
 
