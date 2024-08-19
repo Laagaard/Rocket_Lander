@@ -1,4 +1,4 @@
-# flight_computer
+# `flight_computer`
 
 The `flight_computer` sub-project hosts all material related to the development of the vehicle flight computer.
 
