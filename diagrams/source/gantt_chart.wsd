@@ -15,15 +15,15 @@ Separator just at [SRR]'s end
 2024-08-19 to 2024-12-13 is colored in lavender
 2024-08-19 to 2024-12-13 is named [Fall 2024]
 
-[PDR] happens at 2024-11-11 /' Guess for PDR date '/
+[PDR] happens at 2024-11-15
 Separator just at [PDR]'s end
 [PDR] displays on same row as [SRR]
 
-2024-10-14 to 2024-10-15 is colored in green
+2024-10-14 to 2024-10-15 is colored in lightcoral
 2024-10-14 to 2024-10-15 is named [Fall Break]
 
-2024-11-27 to 2024-11-29 is colored in green
-2024-11-27 to 2024-11-29 is named [Thanksgiving Break]
+2024-11-27 to 2024-12-01 is colored in lightcoral
+2024-11-27 to 2024-12-01 is named [Thanksgiving Break]
 
 /' Spring 2025 Semester Important Dates '/
 2025-01-06 to 2025-05-02 is colored in wheat
@@ -74,8 +74,8 @@ Separator just at [Showcase]'s end
 [Abort system test] happens at [Assemble vehicle]'s end
 [Prepare for Ascent Test] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
 [Ascent Test] happens at [Prepare for Ascent Test]'s end
-[Prepare for IFT-1] requires 1 weeks and starts at [Prepare for Ascent Test]'s end and is colored in deepskyblue
-[IFT-1] happens at [Fall Break]'s start
+[Prepare for Landing Test] requires 1 weeks and starts at [Prepare for Ascent Test]'s end and is colored in deepskyblue
+[Landing Test] happens at [Fall Break]'s start
 
 /' --------------------------------- '/
 
