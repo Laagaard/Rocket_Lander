@@ -27,7 +27,7 @@ function stateDot = rates(t,state)
         ydot = state(4);    % (m/s)
         m = state(7);       % (kg)
     
-
+    
 
 
 

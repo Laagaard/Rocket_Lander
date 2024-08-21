@@ -22,7 +22,7 @@ tic
 % (Initialize now so we know to share with nested functions)
 global x0 xdot0 y0 ydot0 theta0 thetaDot0 m0
 global thrustCurve ratesOptions rho S C_D g_accel t_fire burnTime
-global propellantMass theta0 DesiredRange DesiredCrashSpeed
+global propellantMfass DesiredRange DesiredCrashSpeed
 
 % ===============================
 % Input Section

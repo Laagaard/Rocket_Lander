@@ -11,7 +11,7 @@ function Parameters_Motor
     % Convert loaded structure to array
     thrustCurve = struct2array(thrustCurve); % (s,N)
     propellantMass = 0.0625; % (kg)
-    burnTime = 4.4; % (s)
+    burnTime = thrustCurve(end,1); % (s)
     momentArm_ascentMotor = 0.45; % (m)
     % ======================================
 end
