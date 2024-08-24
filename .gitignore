@@ -2,3 +2,5 @@
 *.slxc
 *.xml
 .vscode
+build
+libs
