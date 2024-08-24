@@ -22,7 +22,7 @@ tic
 % (Initialize now so we know to share with nested functions)
 global x0 xdot0 y0 ydot0 theta0 thetaDot0 m0
 global thrustCurve ratesOptions rho S C_D g_accel t_fire burnTime
-global propellantMass DesiredRange DesiredCrashSpeed
+global propellantMass DesiredRange DesiredCrashSpeed animateOptions
 
 % ===============================
 % Input Section
@@ -93,7 +93,7 @@ time_Crash = freeFlightTime(index_Crash)
 % Motor timing Determination using ODE45
 
 % ODE45 options and rates options
-options_descent = odeset('RelTol',5E-1,'MaxStep',1E-1);
+options_descent = odeset('RelTol',52E-1,'MaxStep',1E-1);
 
 % Set options for running rates function
 ratesOptions = [1 0];
@@ -167,5 +167,112 @@ legend('Ascent and free flight v_x','Powered Descent v_x','Ascent and free fligh
 title('Vertical and Horizontal Velocities During Flight')
 print('Velocity components during ascent, freeflight, and powered descent.png','-dpng','-r300')
 
+disp(sprintf('landing v_x = %.2f m/s.',poweredDescentStates(descentIndices(end),2)))
+disp(sprintf('landing v_y = %.2f m/s.',poweredDescentStates(descentIndices(end),4)))
+disp(sprintf('landing theta = %.2f degrees.',poweredDescentStates(descentIndices(end),5)))
+
 elapsedTime = toc
 disp(sprintf('Elasped time was %.0f minutes, %.0f seconds.',elapsedTime/60,mod(elapsedTime,60)))
+
+%%
+% ===============================================================
+% ANIMATION
+
+figure(5)
+title('Rocket Trajectory Animation')
+xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)')
+camlight('left');        
+material('dull');
+scaleFactor = 36.00000065 * 25.4;
+
+%%
+
+% set boundaries of screen by placing markers at launch site, target,
+% apogee, ascent burnout, and descent ignition altitudes (and x and y
+% coordinates)
+
+%%
+
+% setup patch for animation
+
+        fv_noFire = stlread('Rocket_Lander_No_Fire.stl');
+        fv_noFire.vertices = fv_noFire.vertices/scaleFactor;
+        
+        noFireRocket_patch = patch(fv_noFire,'FaceColor', [0 1 0], 'EdgeColor', 'none');
+        rocket_Patch_XData0 = noFireRocket_patch.XData;
+        rocket_Patch_ZData0 = noFireRocket_patch.ZData;
+        
+        fv_ascentRocketFire = stlread('Rocket_Lander_Ascent_Fire.stl');
+        fv_ascentRocketFire.vertices = fv_ascentRocketFire.vertices/scaleFactor;
+        
+        ascentFire_patch = patch(fv_ascentRocketFire,'FaceColor', [1 0.1 0.1], 'EdgeColor', 'none');
+        ascentFire_patch_XDATA0 = ascentFire_patch.XData;
+        ascentFire_patch_ZDATA0 = ascentFire_patch.ZData;
+
+% Loop through optimal states to animate rocket on ascent and coast
+prevTime = 0; % initialize
+for ctr = indices(1):descentTimingIndex
+    timeAnimation = freeFlightTime(ctr);
+    if or(timeAnimation>=prevTime+0.25,ctr==indices(1))
+        statesToAnimate = freeFlightStates(ctr,:);
+
+        if timeAnimation <= burnTime
+            % show flame
+            ascentFire_patch.XData = ascentFire_patch_XDATA0 + statesToAnimate(1);
+            ascentFire_patch.ZData = ascentFire_patch_ZDATA0 + statesToAnimate(3);
+        else
+            ascentFire_patch.Visible = 'off';
+        end
+        
+        % draw rocket
+        noFireRocket_patch.XData = rocket_Patch_XData0 + statesToAnimate(1);
+        noFireRocket_patch.ZData = rocket_Patch_ZData0 + statesToAnimate(3);
+
+        xlim([-10 60]); zlim([-10 160]);  axis equal; view([12 14]);
+        pause(0.01);
+        prevTime = timeAnimation;
+
+    end
+end
+
+%% Powered Descent
+
+% setup patch for animation
+fv_descendingRocket = stlread('Rocket_Lander_Descent_Rocket.stl');
+fv_descendingRocket.vertices = fv_descendingRocket.vertices/scaleFactor;
+
+descengingRocket_patch = patch(fv_descendingRocket,'FaceColor',[0 1 0],'EdgeColor','none');
+
+descendingRocketP_patch_XData0 = ascentFire_patch.XData;
+descendingRocketP_patch_ZData0 = ascentFire_patch.ZData;
+
+fv_descentRocketFire = stlread('Rocket_Lander_Descent_Fire.stl');
+fv_descentRocketFire.vertices = fv_descentRocketFire.vertices/scaleFactor;
+
+descentFire_patch = patch(fv_descentRocketFire,'FaceColor', [1 .1 .1], 'EdgeColor', 'none');
+
+descendingFire_patch_XData0 = descentFire_patch.XData;
+descendingFire_patch_ZData0 = descentFire_patch.ZData;
+
+
+% Loop through optimal states to animate rocket on powered descent
+prevTime = 0; % initialize
+timeAnimation = poweredDescentTime(descentIndices(1));
+for ctr = descentIndices(1):descentIndices(end)
+    if or(timeAnimation>=prevTime+0.25,ctr==indices(1))
+        statesToAnimate = poweredDescentStates(ctr,:);
+
+        % update descending rocket 
+        descengingRocket_patch.XData = descendingRocketP_patch_XData0 + statesToAnimate(1); % m
+        descengingRocket_patch.ZData = descendingRocketP_patch_ZData0 + statesToAnimate(3);
+
+        % update descending fire
+        descentFire_patch.XData = descendingFire_patch_XData0 + statesToAnimate(1); % m
+        descentFire_patch.ZData = descendingFire_patch_ZData0 + statesToAnimate(3);
+
+        xlim([-75 95]); zlim([-10 160]);  axis equal; view([12 14]);
+        pause(0.01)
+        prevTime = timeAnimation;
+
+    end
+end

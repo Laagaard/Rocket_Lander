@@ -36,8 +36,10 @@ function stateDot = rates(t,state)
     % descent motor has fired yet or not. If not fired yet (or not firing at
     % all), theta set by velocity direction and thetaDot set to zero (can go
     % back in later and calculate if needed).
-
-        if ratesOptions(1)==true            % if firing descent motor
+    
+    
+        % For PROPULSIVE-LANDING Trajectory ONLY
+        if ratesOptions(1)==true           
             if (t<t_fire)||(t<=burnTime)
                 % if motor not fired yet and still burning first motor
                 theta = theta0;  % (deg)
@@ -47,7 +49,7 @@ function stateDot = rates(t,state)
                 theta = atan2d(ydot,xdot);   % (deg)
                 thetaDot = 0;
             elseif ratesOptions(2)==true
-                % if descent motor has fired and using TVC, calculate 
+                % if descent motor has fired and using TVC, calculate
                 % from TVC torques
                 theta = state(5);       % (deg)
             else
@@ -55,8 +57,10 @@ function stateDot = rates(t,state)
                 theta = atan2d(ydot,xdot);   % (deg)
                 thetaDot = 0;
             end
-        elseif ratesOptions(2)==false % if not firing descent motor
-            if t<burnTime
+           
+        % For LAWN-DART Trajectory ONLY
+        else % (not firing descent motor)
+            if t<=burnTime
                 % if motor not fired yet and still burning first motor
                 theta = theta0;  % (deg)
                 thetaDot = 0;    % (deg/s)
@@ -65,6 +69,33 @@ function stateDot = rates(t,state)
                 thetaDot = 0;    % (deg/s)
             end
         end
+
+    % ======================================================
+        % % OPTION 2: DO IT NATE'S WAY TO SATISFY HIS HIGH SCHOOL PROGRAMMING
+        % % PROFESSOR. Tests for the "most strict condition" first.
+
+        % % if using TVC
+        % if ratesOptions(2)==true
+        %     % if descent motor has fired and using TVC, calculate
+        %     % from TVC torques
+        % 
+        %     % DO PID STUFF
+        % 
+        %     theta = state(5);       % (deg)
+        % 
+        % % if no TVC but still descent motor burn
+        % elseif ratesOptions(1)==true
+        %     % during ascent motor burn
+        %     if (t<=burnTime)
+        %         theta = theta0;  % (deg)
+        %         thetaDot = 0;    % (deg/s)
+        %     % after ascent motor burnout
+        %     else
+        %         % calculate from velocity direction
+        %         theta = atan2d(ydot,xdot);   % (deg)
+        %         thetaDot = 0;
+        %     end
+        % end
     
         
     % =========================================
