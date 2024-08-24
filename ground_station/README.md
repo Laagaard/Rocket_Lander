@@ -9,8 +9,12 @@
 1. Follow the "Using the CMake GUI" steps [here](https://docs.wxwidgets.org/latest/overview_cmake.html#cmake_options)
 2. Run `cmake -G "Unix Makefiles"`
 
-## Build
+## Build & Run
 * Run `make build`
 
     * This will create a `build` directory for the build files (if one does not already exist)
-    * The executable will be placed in the root `ground_station` directory (makes it easier to track with `git`, since `build` is in the `.gitignore`)
+    * The executable will be placed in the `build` directory
+
+* Run `make run`
+
+    * This will run the application
