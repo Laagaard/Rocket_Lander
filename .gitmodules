@@ -1,0 +1,3 @@
+[submodule "ground_station/libs/wxWidgets"]
+	path = ground_station/libs/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets.git
