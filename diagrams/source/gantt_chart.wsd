@@ -12,18 +12,26 @@ today is colored in black
 Separator just at [SRR]'s end
 
 /' Fall 2024 Semester Important Dates '/
+[EDS Report] happens at 2024-09-20
+Separator just at [EDS Report]'s end
+[EDS Report] displays on same row as [SRR]
+
 2024-08-19 to 2024-12-13 is colored in lavender
 2024-08-19 to 2024-12-13 is named [Fall 2024]
 
-[PDR] happens at 2024-11-15
-Separator just at [PDR]'s end
-[PDR] displays on same row as [SRR]
+[PDR Slides] happens at 2024-11-15
+Separator just at [PDR Slides]'s end
+[PDR Slides] displays on same row as [SRR]
 
 2024-10-14 to 2024-10-15 is colored in lightcoral
 2024-10-14 to 2024-10-15 is named [Fall Break]
 
 2024-11-27 to 2024-12-01 is colored in lightcoral
 2024-11-27 to 2024-12-01 is named [Thanksgiving Break]
+
+[PDR Report] happens at 2024-12-06
+Separator just at [PDR Report]'s end
+[PDR Report] displays on same row as [SRR]
 
 /' Spring 2025 Semester Important Dates '/
 2025-01-06 to 2025-05-02 is colored in wheat
