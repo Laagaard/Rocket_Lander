@@ -1,0 +1,28 @@
+@startwbs system_hierarchy
+* DART Vehicle
+
+** Ascent System
+*** Fins
+*** Ascent Motor
+*** Motor Tube
+*** Centering Rings
+
+** Abort System
+*** Parachute
+*** Shock Cords
+*** Pyrotechnic Charge
+
+** Landing System
+***:Thrust Vector Control
+(TVC) Mechanism;
+*** Descent Motor
+*** Landing Legs
+***:Landing Leg Deployment
+Mechanism (LLDM);
+
+** Avionics
+*** Flight Computer
+*** Flight Software
+
+** Payload
+@endwbs
