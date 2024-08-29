@@ -7,4 +7,6 @@ build_dir:
 	@IF exist build ( echo build directory exists ) ELSE ( mkdir build && echo build directory created)
 
 run:
-	@cd build && .\ground_station.exe
+	@cd build/source && .\ground_station.exe
+
+all: build run
