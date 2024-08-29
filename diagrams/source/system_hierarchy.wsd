@@ -1,4 +1,6 @@
 @startwbs system_hierarchy
+scale 1920*1080
+
 * DART Vehicle
 
 ** Ascent System
@@ -6,6 +8,7 @@
 *** Ascent Motor
 *** Motor Tube
 *** Centering Rings
+*** Rail Buttons
 
 ** Abort System
 *** Parachute
@@ -20,9 +23,13 @@
 ***:Landing Leg Deployment
 Mechanism (LLDM);
 
-** Avionics
-*** Flight Computer
+** Avionics System
 *** Flight Software
+*** Flight Computer
+**** XBee Radio Module
+**** Barometer
+**** IMU
+**** Microcontroller
 
 ** Payload
 @endwbs
