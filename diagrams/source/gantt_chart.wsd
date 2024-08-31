@@ -58,35 +58,36 @@ Separator just at [Showcase]'s end
 [Motor trade study] requires 6 weeks and starts 2024-04-29 and is colored in plum
 [Fin material trade study] requires 6 weeks and starts 2024-04-29 and is colored in silver
 [Airframe trade study] requires 4 weeks and starts 2024-05-20 and is colored in silver
-[Design landing leg deployment mechanism] requires 10 weeks and starts 2024-06-03 and is colored in silver
-[Design landing legs] requires 11 weeks and starts at 2024-06-03 and is colored in silver
+[Design landing leg deployment mechanism] requires 15 weeks and starts 2024-06-03 and is colored in silver
+[Design landing legs] requires 15 weeks and starts at 2024-06-03 and is colored in silver
 [Research throttling mechanism] requires 14 weeks and starts 2024-04-29 and is colored in plum
 [Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-29 and is colored in silver
 [Write simulation software] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
 [Design flight computer] requires 16 weeks and starts 2024-04-29 and is colored in lightgreen
 
-
 /' Fall 2024 Tasks '/
 
-[Establish vehicle layout] requires 2 weeks and starts 2024-08-19 and is colored in deepskyblue
-[Design TVC mount] requires 2 weeks and starts 2024-08-19 and is colored in silver
-[Design motor test stand] requires 2 weeks and starts 2024-08-19 and is colored in plum
-[Build motor test stand] requires 3 weeks and starts at [Design motor test stand]'s end and is colored in plum
+[Build landing legs] requires 1 weeks and starts at [Design landing legs]'s end and is colored in silver
+[Test landing legs] requires 1 weeks and starts at [Build landing legs]'s end and is colored in silver
 [Refine simulation software] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
 [Write control SW] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
 [Assemble FC] requires 4 weeks and starts at [Design flight computer]'s end and is colored in lightgreen
-[Assemble TVC] requires 3 weeks and starts at [Design TVC mount]'s end and is colored in deepskyblue
+[Establish vehicle layout] requires 2 weeks and starts 2024-08-19 and is colored in deepskyblue
+[Design TVC mount] requires 3 weeks and starts 2024-08-19 and is colored in silver
+[Design motor test stand] requires 3 weeks and starts 2024-08-19 and is colored in plum
+[Analyze test stand system] requires 1 week and starts at [Design TVC mount]'s end and is colored in silver
+[Build motor test stand] requires 1 weeks and starts at [Analyze test stand system]'s end and is colored in plum
+[Assemble TVC] requires 1 weeks and starts at [Analyze test stand system]'s end and is colored in deepskyblue
 [Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
 [Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
-[Build & test landing legs] requires 6 weeks and starts at [Design landing legs]'s end and is colored in silver
 [Assemble vehicle] requires 4 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
+' [Landing Leg Drop Test] happens at 
 [Abort system test] happens at [Assemble vehicle]'s end
 [Prepare for Ascent Test] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
 [Ascent Test] happens at [Prepare for Ascent Test]'s end
 [Prepare for Landing Test] requires 1 weeks and starts at [Prepare for Ascent Test]'s end and is colored in deepskyblue
 [Landing Test] happens at [Fall Break]'s start
 
-[Design landing leg deployment mechanism] -> [Build & test landing legs]
 [Build motor test stand] -> [Test TVC]
 
 /' --------------------------------- '/
