@@ -35,13 +35,41 @@ frame_t::frame_t() : wxFrame(nullptr, wxID_ANY, "DART Ground Station")
     wxStaticBox *vehicle_information_static_box = new wxStaticBox(this, wxID_ANY, "Vehicle Information", wxDefaultPosition, wxDefaultSize); // static box to surround vehicle information
     wxStaticBoxSizer *vehicle_information_sizer = new wxStaticBoxSizer(vehicle_information_static_box, wxVERTICAL); // vertical box sizer for the vehicle information list view
 
-    wxListView *vehicle_information_listview = new wxListView(vehicle_information_static_box, wxID_ANY, wxDefaultPosition, wxDefaultSize); // wxListView to organize vehicle information
-    vehicle_information_listview->InsertColumn(0, "State", wxLIST_FORMAT_LEFT); // first "State" column
-    vehicle_information_listview->InsertColumn(1, "Value", wxLIST_FORMAT_LEFT); // first "Value" column
-    vehicle_information_listview->InsertColumn(2, "State", wxLIST_FORMAT_LEFT); // second "State" column
-    vehicle_information_listview->InsertColumn(3, "Value", wxLIST_FORMAT_LEFT); // second "Value" column
-    vehicle_information_listview->InsertColumn(4, "State", wxLIST_FORMAT_LEFT); // third "State" column
-    vehicle_information_listview->InsertColumn(5, "Value", wxLIST_FORMAT_LEFT); // third "Value" column
+    wxListView *vehicle_information_listview = new wxListView(vehicle_information_static_box, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_HRULES); // wxListView to organize vehicle information
+
+    // Add state and value columns to vehicle information wxListView
+    for (int i = 0; i < 6; i++){
+        if (i % 2 == 0){
+            vehicle_information_listview->AppendColumn("State", wxLIST_FORMAT_LEFT);
+        } else {
+            vehicle_information_listview->AppendColumn("Value", wxLIST_FORMAT_LEFT);
+        }
+    }
+
+    // 2D vector of states being tracked
+    std::vector<std::vector<std::string>> states = {{"State:", "Voltage [V]:", "Temperature [F]:"},
+                                                    {"Pyro 1:", "Pyro 2:", "Pyro 3:"},
+                                                    {"x-pos [m]:", "x-vel [m]:", "x-acc [m]:"},
+                                                    {"y-pos [m/s]:", "y-vel [m/s]:", "y-acc [m/s]:"},
+                                                    {"z-pos [m/s^2]:", "z-vel [m/s^2]:", "z-pos [m/s^2]:"},
+                                                    {"Roll [deg]:", "Pitch [deg]:", "Yaw [deg]:"}};
+
+    // Populate wxListView with states being tracked
+    for (int i = 0; i < vehicle_information_listview->GetColumnCount(); i++){
+        if (i % 2 == 0){
+            for (int j = 0; j < states.size(); j++){
+                wxListItem state;
+                state.SetId(j);
+                state.SetColumn(i);
+                state.SetText(states[j][i/2]);
+                vehicle_information_listview->InsertItem(state);
+                vehicle_information_listview->SetItem(state);
+
+                // Auto adjust column width to fit widest entry
+                vehicle_information_listview->SetColumnWidth(i, wxLIST_AUTOSIZE);
+            }
+        }
+    }
 
     vehicle_information_sizer->Add(vehicle_information_listview, 1, wxALL | wxALIGN_LEFT); // add vehicle information listview to the vehicle information sizer
 
