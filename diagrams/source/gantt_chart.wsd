@@ -58,7 +58,7 @@ Separator just at [Showcase]'s end
 [Motor trade study] requires 6 weeks and starts 2024-04-29 and is colored in plum
 [Fin material trade study] requires 6 weeks and starts 2024-04-29 and is colored in silver
 [Airframe trade study] requires 4 weeks and starts 2024-05-20 and is colored in silver
-[Design landing leg deployment mechanism] requires 15 weeks and starts 2024-06-03 and is colored in silver
+[Design landing leg deployment mechanism (LLDM)] requires 15 weeks and starts 2024-06-03 and is colored in silver
 [Design landing legs] requires 15 weeks and starts at 2024-06-03 and is colored in silver
 [Research throttling mechanism] requires 14 weeks and starts 2024-04-29 and is colored in plum
 [Design ground equipment (GE/GSE)] requires 14 weeks and starts 2024-04-29 and is colored in silver
@@ -68,9 +68,10 @@ Separator just at [Showcase]'s end
 /' Fall 2024 Tasks '/
 
 [Build landing legs] requires 1 weeks and starts at [Design landing legs]'s end and is colored in silver
+[Assemble LLDM] requires 1 week and starts at [Design landing leg deployment mechanism (LLDM)]'s end and is colored in silver
 [Test landing legs] requires 1 weeks and starts at [Build landing legs]'s end and is colored in silver
 [Refine simulation software] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
-[Write control SW] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
+[Write flight SW] requires 8 weeks and starts 2024-08-19 and is colored in lightgreen
 [Assemble FC] requires 4 weeks and starts at [Design flight computer]'s end and is colored in lightgreen
 [Establish vehicle layout] requires 2 weeks and starts 2024-08-19 and is colored in deepskyblue
 [Design TVC mount] requires 3 weeks and starts 2024-08-19 and is colored in silver
@@ -79,6 +80,8 @@ Separator just at [Showcase]'s end
 [Build motor test stand] requires 1 weeks and starts at [Analyze test stand system]'s end and is colored in plum
 [Assemble TVC] requires 1 weeks and starts at [Analyze test stand system]'s end and is colored in deepskyblue
 [Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
+[Design ascent motor mount] requires 1 week and starts at [Establish vehicle layout]'s end and is colored in silver
+[Build ascent motor mount] requires 1 week and starts at [Design ascent motor mount]'s end and is colored in silver
 [Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
 [Assemble vehicle] requires 4 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
 ' [Landing Leg Drop Test] happens at 
