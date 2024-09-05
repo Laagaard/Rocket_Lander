@@ -1,5 +1,6 @@
 @startwbs system_hierarchy
 scale 1920*1080
+!theme spacelab
 
 * DART Vehicle
 
@@ -14,6 +15,7 @@ scale 1920*1080
 *** Parachute
 *** Shock Cords
 *** Pyrotechnic Charge
+*** Connection Hardware
 
 ** Landing System
 ***:Thrust Vector Control
