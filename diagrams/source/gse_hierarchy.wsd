@@ -1,0 +1,16 @@
+@startwbs gse_hierarchy
+scale 1920*1080
+!theme spacelab
+
+* Ground System
+
+** Ground Support Software (GSS)
+
+** Ground Support Equipment (GSE)
+*** XBee Radio Module
+*** Launch Switch
+*** Launch Stand
+*** Launch Rail
+*** Ascent Motor Igniter
+
+@endwbs
