@@ -82,9 +82,12 @@ Separator just at [Showcase]'s end
 [Test TVC] requires 1 weeks and starts at [Assemble TVC]'s end and is colored in deepskyblue
 [Design ascent motor mount] requires 1 week and starts at [Establish vehicle layout]'s end and is colored in silver
 [Build ascent motor mount] requires 1 week and starts at [Design ascent motor mount]'s end and is colored in silver
+[Design payload system] requires 1 week and starts 2024-09-09 and is colored in silver
+[Build payload system] requires 1 week and starts at [Design payload system]'s end and is colored in silver
+[Design abort system] requires 1 week and starts 2024-09-09 and is colored in silver
+[Build abort system] requires 1 week and starts at [Design abort system]'s end and is colored in silver
 [Build and test GSE] requires 6 weeks and starts at [Design ground equipment (GE/GSE)]'s end and is colored in silver
 [Assemble vehicle] requires 4 weeks and starts at [Establish vehicle layout]'s end and is colored in deepskyblue
-' [Landing Leg Drop Test] happens at 
 [Abort system test] happens at [Assemble vehicle]'s end
 [Prepare for Ascent Test] requires 1 weeks and starts at [Assemble vehicle]'s end and is colored in deepskyblue
 [Ascent Test] happens at [Prepare for Ascent Test]'s end

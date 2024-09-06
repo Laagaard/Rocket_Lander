@@ -33,5 +33,7 @@ Mechanism (LLDM);
 **** IMU
 **** Microcontroller
 
-** Payload
+** Payload Systen
+*** Payload Bay
+*** Payload
 @endwbs
