@@ -20,7 +20,7 @@ tic
 % ===============================
 % List of all shared variables
 % (Initialize now so we know to share with nested functions)
-global x0 xdot0 y0 ydot0 z0 zdot0 psi0 theta0 phi0 P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0 C_P0 thetaDot0 C_D S 
+global x0 xdot0_body xdot0_inertial y0 ydot0_body ydot0_inertial z0 zdot0_body zdot0_inertial psi0 theta0 phi0 P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0 C_P0 thetaDot0 C_D S 
 global thrustCurve ratesOptions rho S C_D g_accel t_fire burnTime
 global propellantMass DesiredRange DesiredCrashSpeed animateOptions
 
@@ -41,18 +41,16 @@ Parameters_Earth
 
 % Launch Angle Determination ODE45 options
 tspan = [0 20]; % (s)
-options = odeset('MaxStep',2.5E-3,'relTol',5E-2);
+options = odeset('MaxStep',2.5E-2);
 % Set options for running rates function
 ratesOptions = [0 0];
 % ratesOptions(1)   -   are we firing descent motor?
 % ratesOptions(2)   -   are we using TVC?
 
-
 % iterate through potential launch angles
-for theta=deg2rad(45)
-    theta0 = theta % set launch angle to theta
-    Y0 = [x0 xdot0 y0 ydot0 z0 zdot0 psi0 theta0 phi0 P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0]';
-
+for pitch_angle = deg2rad(90)
+    launch_angle = pitch_angle % set launch angle to theta
+    Y0 = [x0 xdot0_body xdot0_inertial y0 ydot0_body ydot0_inertial z0 zdot0_body zdot0_inertial psi0 theta0 phi0 launch_angle P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0]';
     % Launch rocket and calculate landing range
     [t,y] = ode45(@sixDOF,tspan,Y0,options);
 
@@ -60,25 +58,25 @@ for theta=deg2rad(45)
     range = sqrt(y(indices(end),1)^2 + y(indices(end),3)^2);   % (m)
     
     % Check if desired range condition is satisfied within tolerance
-    if (range > DesiredRange)
+    % if (range > DesiredRange)
         % set launch pitch angle
-        thetaLaunch = theta; % (degrees)
+        thetaLaunch = pitch_angle; % (degrees)
         freeFlightTime = t;
         freeFlightStates = y;
         fprintf('Desired range possible with launch angle of %.2f degrees.\n',rad2deg(thetaLaunch))
 
         figure()
-        plot3(freeFlightStates(indices,1),freeFlightStates(indices,3),freeFlightStates(indices,5),'b')
+        plot3(freeFlightStates(indices,1),freeFlightStates(indices,4),freeFlightStates(indices,7),'b')
         hold on
         [~, index_burnout] = min(abs(freeFlightTime - burnTime));
-        plot3(freeFlightStates(index_burnout,1),freeFlightStates(index_burnout,3),freeFlightStates(index_burnout,5),'.r',MarkerSize=10)
+        plot3(freeFlightStates(index_burnout,1),freeFlightStates(index_burnout,4),freeFlightStates(index_burnout,7),'.r',MarkerSize=10)
         grid minor
         xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)')
         title('3D Trajectory')
         print('time versus trajectory.png','-dpng','-r300')
         % freeFlightStates(:,5) = atan2d(freeFlightStates(:,4),freeFlightStates(:,2)); % (degrees)
-        break
-    end
+    %     break
+    % end
 
 end
 
