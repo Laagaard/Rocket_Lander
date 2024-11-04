@@ -1,0 +1,88 @@
+@startmindmap system_architecture
+scale 3840*2160
+top to bottom direction
+skinparam backgroundColor transparent
+hide stereotype
+
+<style>
+mindmapDiagram {
+    FontName Verdana
+    RoundCorner 5
+
+    .systemNode {
+        FontSize 30
+        FontColor white
+        FontStyle bold
+        BackgroundColor #830C2C
+        Padding 30
+        Margin 20
+        HorizontalAlignment left
+    };
+
+    .subsystemNode {
+        FontSize 25
+        FontColor white
+        FontStyle bold
+        BackgroundColor #830C2C
+        Padding 20
+        Margin 15
+    };
+
+    .subsubsystemNode {
+        FontSize 20
+        FontColor white
+        FontStyle italic
+        BackgroundColor #830C2C
+        Padding 10
+    };
+
+    .componentNode {
+        FontSize 15
+        FontColor white
+        BackgroundColor #830C2C
+        Margin 3
+    };
+}
+</style>
+
+* DART Vehicle <<systemNode>>
+
+' -------- CONTROLS --------
+** Controls <<subsystemNode>>
+
+*** Flight Software <<subsubsystemNode>>
+**** Sensor Readings <<componentNode>>
+***** Sensor Fusion Algorithm <<componentNode>>
+****** State Machine <<componentNode>>
+******* Control Outputs <<componentNode>>
+
+*** Flight Hardware <<subsubsystemNode>>
+**** Barometric Pressure Sensor <<componentNode>>
+***** 9-Axis IMU <<componentNode>>
+****** GPS Sensor <<componentNode>>
+******* Servo Motors <<componentNode>>
+
+' -------- PROPULSION --------
+** Propulsion <<subsystemNode>>
+*** Ascent System <<subsubsystemNode>>
+**** Ascent Motor <<componentNode>>
+***** Ascent Motor Mount <<componentNode>>
+****** Fins <<componentNode>>
+*** Descent System <<subsubsystemNode>>
+**** Descent Motor <<componentNode>>
+***** Thrust-Vector-Control (TVC)\nMechanism <<componentNode>>
+
+' -------- STRUCTURES --------
+** Structures <<subsystemNode>>
+*** Payload System <<subsubsystemNode>>
+**** Payload <<componentNode>>
+***** Payload Bay <<componentNode>>
+*** Abort System <<subsubsystemNode>>
+**** Parachute <<componentNode>>
+***** Ejection Charge <<componentNode>>
+****** Shock Cords <<componentNode>>
+******* Connection Hardware <<componentNode>>
+*** Landing System <<subsubsystemNode>>
+**** Landing Legs <<componentNode>>
+***** Landing-Leg Deployment \nMechanism (LLDM) <<componentNode>>
+@endmindmap
