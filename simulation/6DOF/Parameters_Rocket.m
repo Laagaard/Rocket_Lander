@@ -16,7 +16,7 @@ function Parameters_Rocket
     z0 = 0; % (m)
     zdot0_body = 0; % (m/s)
     zdot0_inertial = 0; % (m/s)
-    eulAngles = deg2rad([-90 -90.01 0]); % (rad) yaw angle, pitch angle, roll angle
+    eulAngles = deg2rad([-90 -91 0]); % (rad) yaw angle, pitch angle, roll angle
     psi0 = eulAngles(1); % (rad) yaw angle
     theta0 = eulAngles(2); % (rad) pitch angle
     phi0 = eulAngles(3); % (rad) roll angle
