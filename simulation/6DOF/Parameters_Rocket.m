@@ -5,7 +5,7 @@ function Parameters_Rocket
     % 3 inch by 3 ft cardboard tube rocket
 
     global x0 xdot0_body xdot0_inertial y0 ydot0_body ydot0_inertial z0 zdot0_body zdot0_inertial 
-    global psi0 theta0 phi0 alpha0 beta0 P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0 C_P0 C_L_alpha thetaDot0 C_D S 
+    global psi0 theta0 phi0 alpha0 beta0 P0 Q0 R0 m0 I_xx0 I_yy0 I_zz0 C_G0 C_P0 C_L_equation AOA C_D_equation thetaDot0 C_D S 
     
     x0 = 0; % (m)
     xdot0_body = 0; % (m/s)
@@ -16,7 +16,7 @@ function Parameters_Rocket
     z0 = 0; % (m)
     zdot0_body = 0; % (m/s)
     zdot0_inertial = 0; % (m/s)
-    eulAngles = deg2rad([-90 -91 0]); % (rad) yaw angle, pitch angle, roll angle
+    eulAngles = deg2rad([-90 -92 0]); % (rad) yaw angle, pitch angle, roll angle
     psi0 = eulAngles(1); % (rad) yaw angle
     theta0 = eulAngles(2); % (rad) pitch angle
     phi0 = eulAngles(3); % (rad) roll angle
@@ -30,8 +30,10 @@ function Parameters_Rocket
     I_yy0 = 0.273645; % (kg*m^2) 
     I_zz0 = 0.273654; % (kg*m^2)
     C_G0 = 611.908E-3; % [m] initial CG location (measured from tip of nose)
-    C_P0 = 0.656; % [m] initial CP location (measured from tip of nose)
-    C_L_alpha = 10; % (1/rad) TOTALLY WRONG AND NEEDS TO BE CHANGED (JUST A PLACEHOLDER)
+    C_P0 = 0.6698; % [m] initial CP location (measured from tip of nose)
+    syms AOA
+    C_L_equation = 15.52*AOA; % (1/rad)
+    C_D_equation = 38.828*AOA^2 - 2.6216*AOA + 1.6939; % (1/rad)
 
     thetaDot0 = 0; % (degrees/s)
     

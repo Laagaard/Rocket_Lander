@@ -37,7 +37,7 @@ function stateDot = sixDOF_v2(t,state)
 
 % =========================================
 % Import global varialbes
-global thrustCurve ratesOptions rho S C_D C_P0 C_L_alpha g_accel t_fire burnTime
+global thrustCurve ratesOptions rho S C_D C_P0 AOA C_L_equation C_D_equation g_accel t_fire burnTime
 global propellantMass
 
 % =========================================
@@ -51,9 +51,9 @@ zdot_inertial           =   state(6);   % (m/s) z velocity - inertial frame
 psi                     =   state(7);  % (rad) heading (yaw) Euler angle
 theta                   =   state(8);  % (rad) pitch Euler angle
 phi                     =   state(9);  % (rad) roll Euler angle
-P                       =   state(10);  % (rad/s) x-axis (roll) angular rate
-Q                       =   state(11);  % (rad/s) y-axis (pitch) angular rate
-R                       =   state(12);  % (rad/s) z-axis (yaw) angular rate
+P_body                  =   state(10);  % (rad/s) x-axis (roll) angular rate - body frame
+Q_body                  =   state(11);  % (rad/s) y-axis (pitch) angular rate - body frame
+R_body                  =   state(12);  % (rad/s) z-axis (yaw) angular rate - body frame
 m                       =   state(13);  % (kg)
 I_xx                    =   state(14);  % (kg)
 I_yy                    =   state(15);  % (kg)
@@ -101,14 +101,14 @@ zdot_body = linear_velocities_body(3);
 
 % Evaluate Lift
 alpha = atan2(zdot_body, xdot_body); % (rad) angle of attack (DOES NOT ACCOUNT FOR YDOT_BODY)
-Lift = 0;%1/2 * rho * norm(linear_velocities_body)^2 * S * C_L_alpha*abs(alpha); % (N)
+Lift = abs(1/2 * rho * norm(linear_velocities_body)^2 * S * double(subs(C_L_equation, AOA, alpha))); % (N)
 
 % Evaluate Drag
-Drag = 0;%1/2 * rho * norm(linear_velocities_body)^2 * S * C_D; % (N)
+Drag = abs(1/2 * rho * norm(linear_velocities_body)^2 * S * double(subs(C_D_equation, AOA, alpha))); % (N)
 
 % =========================================
 % Sum forces to evaluate moments
-lift_body = [Lift*sin(alpha); 0; Lift*cos(alpha)]; % (N) lift expressed in body coordinates
+lift_body = [Lift*sign(cos(alpha))*abs(sin(alpha)); 0; Lift*-sign(sin(alpha))*abs(cos(alpha))]; % (N) lift expressed in body coordinates
 drag_body = [Drag*(-cos(alpha)); 0; Drag*(-sin(alpha))]; % (N) drag expressed in body coordinates
 f_aero_body = [lift_body(1) + drag_body(1);
                0;
@@ -139,20 +139,20 @@ linear_accelerations_body = [xddot_body yddot_body zddot_body];
 x_bar = [C_G - C_P0; 0; 0]; % (m) static margin (distance between CP and CG) in body coordinates)
 M = cross(x_bar, f_aero_body); % (N*m) net moment on the rocket in body coordinates
 
-psi_dot = (Q*sin(phi) + R*cos(phi))/cos(theta); % (rad/s) heading/yaw angle rate
-theta_dot = Q*cos(phi) - R*sin(phi); % (rad/s) attitude angle rate
-phi_dot = P + (Q*sin(phi) + R*cos(phi))*tan(theta); % (rad/s) bank/roll angle rate
+psi_dot = (Q_body*sin(phi) + R_body*cos(phi))/cos(theta); % (rad/s) heading/yaw angle rate
+theta_dot = Q_body*cos(phi) - R_body*sin(phi); % (rad/s) attitude angle rate
+phi_dot = P_body + (Q_body*sin(phi) + R_body*cos(phi))*tan(theta); % (rad/s) bank/roll angle rate
 
-P_dot = (M(1) - (I_zz - I_yy)*Q*R)/I_xx; % (rad/s)
-Q_dot = (M(2) - (I_xx - I_zz)*P*R)/I_yy; % (rad/s)
-R_dot = (M(3) - (I_yy - I_xx)*P*Q)/I_zz; % (rad/s)
+P_dot = (M(1) - (I_zz - I_yy)*Q_body*R_body)/I_xx; % (rad/s^2)
+Q_dot = (M(2) - (I_xx - I_zz)*P_body*R_body)/I_yy; % (rad/s^2)
+R_dot = (M(3) - (I_yy - I_xx)*P_body*Q_body)/I_zz; % (rad/s^2)
 
-% animate_stl([x y z], [xdot_body ydot_body zdot_body], q_body_2_inertial)
+% animate_stl([x y z], q_body_2_inertial)
 
 % Accelerations in Inertial Frame
 linear_accelerations_inertial = quatrotate(q_body_2_inertial, linear_accelerations_body);
 
-fprintf("t = %.4f s, a_N = [%.15f %.15f %.15f], inertial_pos = [%.15f %.15f %.15f] m\n", t, linear_accelerations_inertial, x, y, z)
+fprintf("t = %.4f s, alpha = %.4f deg, theta = %.4f deg, v_b = [%.4f %.4f %.4f] N, inertial_pos = [%.3f %.3f %.3f] m\n", t, rad2deg(alpha), rad2deg(theta), linear_velocities_body, x, y, z)
 
 xddot_inertial = linear_accelerations_inertial(1);
 yddot_inertial = linear_accelerations_inertial(2);
@@ -160,4 +160,5 @@ zddot_inertial = linear_accelerations_inertial(3);
 
 % =========================================
 % Final state derivative vector
-stateDot = [xdot_inertial, xddot_inertial, ydot_inertial, yddot_inertial, zdot_inertial, zddot_inertial, psi_dot, theta_dot, phi_dot, P_dot, Q_dot, R_dot, mdot, 0, 0, 0, 0]';
+stateDot = [xdot_inertial, xddot_inertial, ydot_inertial, yddot_inertial, zdot_inertial, zddot_inertial, ...
+            psi_dot, theta_dot, phi_dot, P_dot, Q_dot, R_dot, mdot, 0, 0, 0, 0]';

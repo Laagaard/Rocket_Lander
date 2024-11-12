@@ -1,6 +1,6 @@
-function setup_animation(q, body_vels)
+function setup_animation(q)
 
-global DART_stl orientation_plot orientation_plot_handle body_velocity_plot body_velocity_plot_handle body_velocity_animation trajectory_plot trajectory_plot_handle orientation_animation trajectory_animation 
+global DART_stl orientation_plot orientation_plot_handle trajectory_plot trajectory_plot_handle orientation_animation trajectory_animation 
 global DesiredAltitude DesiredRange pos_tracked_X pos_tracked_Y pos_tracked_Z xdot_body ydot_body zdot_body
 
 % Check for existing orientation animation file
@@ -13,11 +13,6 @@ if (isfile("trajectory_animation.mp4"))
     delete("trajectory_animation.mp4")
 end
 
-% Check for existing body velocity animation file
-if (isfile("body_velocity_animation.mp4"))
-    delete("body_velocity_animation.mp4")
-end
-
 % Create & open orientation animation object
 orientation_animation = VideoWriter("orientation_animation", "MPEG-4");
 open(orientation_animation);
@@ -25,10 +20,6 @@ open(orientation_animation);
 % Create & open trajectory animation object
 trajectory_animation = VideoWriter("trajectory_animation", "MPEG-4");
 open(trajectory_animation);
-
-% Create & open body velocity animation object
-body_velocity_animation = VideoWriter("body_velocity_animation", "MPEG-4");
-open(body_velocity_animation);
 
 % Quaternion for setup (align body axes with inertial axes)
 q_setup = eul2quat(deg2rad([0 90 0]), "ZYX");
@@ -85,18 +76,5 @@ trajectory_plot_handle = gcf;
 trajectory_plot.XDataSource = "pos_tracked_X";
 trajectory_plot.YDataSource = "pos_tracked_Y";
 trajectory_plot.ZDataSource = "pos_tracked_Z";
-
-% Body Velocity Plot
-body_vels = quatrotate(q_I2B, [body_vels(1) body_vels(2) body_vels(3)]);
-xdot_body = body_vels(1);
-ydot_body = body_vels(2);
-zdot_body = body_vels(3);
-figure("Name", "Body Velocity Plot")
-body_velocity_plot = quiver3(0, 0, 0, xdot_body, ydot_body, zdot_body);
-grid minor
-body_velocity_plot_handle = gcf;
-body_velocity_plot.UDataSource = "xdot_body";
-body_velocity_plot.VDataSource = "ydot_body";
-body_velocity_plot.WDataSource = "zdot_body";
 
 end

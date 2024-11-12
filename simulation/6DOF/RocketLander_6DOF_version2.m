@@ -35,7 +35,7 @@ Parameters_Earth
 
 % Launch Angle Determination ODE45 options
 tspan = [0 20]; % (s)
-options = odeset('MaxStep',2.5E-2);
+options = odeset('MaxStep',2.5E-1);
 % Set options for running rates function
 ratesOptions = [0 0];
 % ratesOptions(1)   -   are we firing descent motor?
@@ -43,7 +43,7 @@ ratesOptions = [0 0];
 
 % Setup Animation
 global DART_stl orientation_animation trajectory_animation pos_tracked_X pos_tracked_Y pos_tracked_Z xdot_body ydot_body zdot_body
-% setup_animation(eul2quat([psi0 theta0 phi0]), [xdot0_body ydot0_body zdot0_body])
+% setup_animation(eul2quat([psi0 theta0 phi0]))
 
 initial_launch_angle = pi/2 - abs(pi/2 - (theta0)) % [rad]
 
@@ -66,12 +66,15 @@ for pitch_angle = rad2deg(initial_launch_angle)
         fprintf('Desired range possible with launch angle of %.2f degrees.\n', thetaLaunch)
 
         figure()
-        plot(freeFlightStates(indices,3),freeFlightStates(indices,5),'b')
+        plot(t(indices),freeFlightStates(indices,5),'b')
         hold on
         [~, index_burnout] = min(abs(freeFlightTime - burnTime));
         plot(freeFlightStates(index_burnout,3),freeFlightStates(index_burnout,5),'.r',MarkerSize=10)
         grid minor
         xlabel('y (m)'); ylabel('z (m)');
+        yyaxis right
+        plot(t(indices),freeFlightStates(indices,8),'k--')
+        ylabel("Theta [rad]")
         title('2D Trajectory')
         print('time versus trajectory.png','-dpng','-r300')
         freeFlightStates(:,5) = atan2d(freeFlightStates(:,4),freeFlightStates(:,2)); % (degrees)
