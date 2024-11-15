@@ -44,6 +44,7 @@ v_meters = sqrt(2*weight/(rho*C_D_parachute)) * sqrt(1./A); % [m/s] correspondin
 v_feet = v_meters*meters_2_feet; % [ft/s] corresponding parachute descent velocities
 
 descent_rate_limits = [15 25]; % [ft/s] suggested lower and upper descent rate limits (hobby rocketry best practices)
+IREC_rate_limit = 36; % [ft/s] landing descent rate limit per IREC requirements (just using as an "official" reference)
 
 CHOSEN_RADIUS = test_parachute_radius*inches_2_feet; % [ft] chosen parachute radius
 
@@ -60,18 +61,21 @@ xlabel("Parachute Radius [ft]", Interpreter="latex")
 ylabel("Descent Rate [ft/s]", Interpreter="latex")
 pause();
 
-yline(descent_rate_limits(2), '--', Label=sprintf("Upper Limit: %.i ft/s", descent_rate_limits(2)), LabelHorizontalAlignment="right", Interpreter="latex")
-yline(descent_rate_limits(1), '--', Label=sprintf("Lower Limit: %.i ft/s", descent_rate_limits(1)), LabelHorizontalAlignment="right", LabelVerticalAlignment="bottom", Interpreter="latex")
-fill([r_feet(1), r_feet(end), r_feet(end), r_feet(1)], [descent_rate_limits(1), descent_rate_limits(1), descent_rate_limits(2), descent_rate_limits(2)], 'green', FaceAlpha=0.25, EdgeAlpha=0)
+yline(IREC_rate_limit, '--', Label=sprintf("IREC Limit: %.i ft/s", IREC_rate_limit), LabelHorizontalAlignment="right", LabelVerticalAlignment="top", Interpreter="latex")
+fill([r_feet(1), r_feet(end), r_feet(end), r_feet(1)], [descent_rate_limits(2), descent_rate_limits(2), IREC_rate_limit, IREC_rate_limit], [0.9290 0.6940 0.1250], FaceAlpha=0.25, EdgeAlpha=0)
+pause();
+yline(descent_rate_limits(2), '--', Label=sprintf("Upper (RoT) Limit: %.i ft/s", descent_rate_limits(2)), LabelHorizontalAlignment="right", Interpreter="latex")
+fill([r_feet(1), r_feet(end), r_feet(end), r_feet(1)], [ylims(1), ylims(1), descent_rate_limits(2), descent_rate_limits(2)], 'green', FaceAlpha=0.25, EdgeAlpha=0)
 pause();
 
+[IREC_rate, IREC_rate_arg] = min(abs(v_feet - IREC_rate_limit));
 [descent_rate_lower, descent_rate_lower_arg] = min(abs(v_feet - descent_rate_limits(1)));
 [descent_rate_upper, descent_rate_upper_arg] = min(abs(v_feet - descent_rate_limits(2)));
 [~, CHOSEN_RADIUS_arg] = min(abs(r_feet - CHOSEN_RADIUS));
 
-xline(r_feet(descent_rate_lower_arg), 'r--', Label=sprintf("%.0f in", r_feet(descent_rate_lower_arg)*feet_2_inches), LabelHorizontalAlignment="center", LabelVerticalAlignment="top", LabelOrientation="horizontal", Interpreter="latex")
+xline(r_feet(IREC_rate_arg), 'r--', Label=sprintf("%.0f in", r_feet(IREC_rate_arg)*feet_2_inches), LabelHorizontalAlignment="center", LabelVerticalAlignment="top", LabelOrientation="horizontal", Interpreter="latex")
 xline(r_feet(descent_rate_upper_arg), 'r--', Label=sprintf("%.0f in", r_feet(descent_rate_upper_arg)*feet_2_inches), LabelHorizontalAlignment="center", LabelVerticalAlignment="top", LabelOrientation="horizontal", Interpreter="latex")
-plot(r_feet(descent_rate_lower_arg), v_feet(descent_rate_lower_arg), 'r.', MarkerSize=20)
+plot(r_feet(IREC_rate_arg), v_feet(IREC_rate_arg), 'r.', MarkerSize=20)
 plot(r_feet(descent_rate_upper_arg), v_feet(descent_rate_upper_arg), 'r.', MarkerSize=20)
 pause();
 
