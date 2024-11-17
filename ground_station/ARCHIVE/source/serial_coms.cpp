@@ -67,10 +67,10 @@ void serial_port::read_bytes(HANDLE hSerial, int n)
 void serial_port::write_bytes(HANDLE hSerial, int n)
 {
     char szBuff[] = {0}; // buffer to store the data in
-    DWORD dwBytesRead = 0; // the number of bytes read during the operation
+    DWORD dwBytesWritten = 0; // the number of bytes read during the operation
 
     // Write n bytes to the serial port; show error if unsuccessful
-    if (!ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL)){
+    if (!ReadFile(hSerial, szBuff, n, &dwBytesWritten, NULL)){
         std::cerr << "Error reading bytes" << std::endl;
     }
 }
