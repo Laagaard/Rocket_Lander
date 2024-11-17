@@ -94,36 +94,40 @@ end
 
 %% Run MATLAB Flight Simulation
 
-run("../simulation/RocketLander_2D_version2p0/RocketLander_2D_version2p0.m") % run flight simulation
+run("../simulation/6DOF/RocketLander_6DOF_version2.m") % run flight simulation
 
 %% Shock Cord & Quick Link Load Calculations
 
-flight_speed = sqrt(freeFlightStates(1:descentTimingIndex,2).^2 + freeFlightStates(1:descentTimingIndex,4).^2); % [m/s] flight speed (from RocketLander_2D_version2p0.m)
+flight_speed = sqrt(freeFlightStates(:,2).^2 + freeFlightStates(:,4).^2 + freeFlightStates(:,6).^2); % [m/s] flight speed (from RocketLander_2D_version2p0.m)
 deployment_force_N = 0.5*rho*flight_speed.^2*A(CHOSEN_RADIUS_arg)*C_D_parachute; % [N] instantaneous force on abort system components if deployed
 deployment_force_lb = deployment_force_N*newtons_2_lbs; % [N] instantaneous force on abort system components if deployed
 
-free_flight_time = freeFlightTime(1:descentTimingIndex); % [s] flight time (excluding powered descent)
+free_flight_time = freeFlightTime; % [s] flight time (excluding powered descent)
+
+indices_of_interest = find(y(:,5) > -0.1);
 
 figure
 hold on
-plot(free_flight_time, flight_speed, 'k')
+plot(free_flight_time(indices_of_interest), flight_speed(indices_of_interest), 'k')
+plot(free_flight_time(indices_of_interest), y(indices_of_interest,5), 'b--')
 xlabel("Flight Time [s]")
-ylabel("Flight Speed $\left[ \frac{m}{s} \right]$", Interpreter="latex")
+ylabel("Flight Speed $\left[ \frac{m}{s} \right]$, Altitude [m]", Interpreter="latex")
 yyaxis right
-plot(free_flight_time, deployment_force_lb)
+ax = gca;
+ax.YAxis(2).Color = 'r';
+plot(free_flight_time(indices_of_interest), deployment_force_lb(indices_of_interest), 'r')
 ylabel("Deployment Load [N]", Interpreter="latex")
-title("Parachute Deployment Load [N] vs. Flight Time [s]")
-pause();
+title("Parachute Deployment Load [N], Altitude [m] vs. Flight Time [s]")
 
 x_axis_limits = xlim;
 y_axis_limits = ylim;
 fill([x_axis_limits(1), burnTime, burnTime, x_axis_limits(1)], [0, 0, y_axis_limits(2), y_axis_limits(2)], 'red', FaceAlpha=0.25, EdgeAlpha=0)
 xline(burnTime, 'k--', Label="APS Burnout", LabelHorizontalAlignment="right", LabelVerticalAlignment="top", Interpreter="latex")
-pause();
 
-plot(free_flight_time(end), deployment_force_lb(end), 'r.', MarkerSize=20)
-text(free_flight_time(end), deployment_force_lb(end), sprintf("%.0f lb", deployment_force_lb(end)), HorizontalAlignment="right", VerticalAlignment="bottom")
+plot(free_flight_time(indices_of_interest(end)), deployment_force_lb(indices_of_interest(end)), 'r.', MarkerSize=20)
+text(free_flight_time(indices_of_interest(end)), deployment_force_lb(indices_of_interest(end)), sprintf("%.0f lb", deployment_force_lb(indices_of_interest(end))), HorizontalAlignment="right", VerticalAlignment="top")
 
+legend({"Speed", "Altitude", "Deployment Load", '', '', ''}, location='NW')
 hold off
 
 %% Component Sourcing
