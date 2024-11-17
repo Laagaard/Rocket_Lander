@@ -1,6 +1,7 @@
 *.mat
 *.slxc
 *.xml
+*.mp4
 .vscode
 build
 libs

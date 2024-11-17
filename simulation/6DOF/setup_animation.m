@@ -1,7 +1,7 @@
 function setup_animation(q)
 
 global DART_stl orientation_plot orientation_plot_handle trajectory_plot trajectory_plot_handle orientation_animation trajectory_animation 
-global DesiredAltitude DesiredRange pos_tracked_X pos_tracked_Y pos_tracked_Z xdot_body ydot_body zdot_body
+global DesiredAltitude DesiredRange pos_tracked_X pos_tracked_Y pos_tracked_Z
 
 % Check for existing orientation animation file
 if (isfile("orientation_animation.mp4"))
@@ -70,7 +70,7 @@ trajectory_plot = plot3(pos_tracked_X, pos_tracked_Y, pos_tracked_Z, 'k--');
 grid minor
 trajectory_plot_axes = gca;
 trajectory_plot_axes.XLim = [-1.1*DesiredRange 1.1*DesiredRange];
-trajectory_plot_axes.YLim = [-1.1*DesiredRange 1.1*DesiredRange];
+trajectory_plot_axes.YLim = [-1.1*DesiredRange 3.5*DesiredRange];
 trajectory_plot_axes.ZLim = [0 2.5*DesiredAltitude];
 trajectory_plot_handle = gcf;
 trajectory_plot.XDataSource = "pos_tracked_X";
