@@ -56,11 +56,12 @@ mindmapDiagram {
 ****** State Machine <<componentNode>>
 ******* Control Outputs <<componentNode>>
 
-*** Flight Hardware <<subsubsystemNode>>
+*** Avionics Hardware <<subsubsystemNode>>
 **** Barometric Pressure Sensor <<componentNode>>
 ***** 9-Axis IMU <<componentNode>>
 ****** GPS Sensor <<componentNode>>
-******* Servo Motors <<componentNode>>
+******* XBee Radio <<componentNode>>
+******** Servo Motors <<componentNode>>
 
 ' -------- PROPULSION --------
 ** Propulsion <<subsystemNode>>
@@ -84,5 +85,5 @@ mindmapDiagram {
 ******* Connection Hardware <<componentNode>>
 *** Landing System <<subsubsystemNode>>
 **** Landing Legs <<componentNode>>
-***** Landing-Leg Deployment \nMechanism (LLDM) <<componentNode>>
+***** Landing-Leg Release \nMechanism (LLRM) <<componentNode>>
 @endmindmap
