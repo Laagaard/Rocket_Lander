@@ -136,3 +136,24 @@ Nylon Shock Cord: https://www.amazon.com/MONOBIN-Colors-Paracord-Bracelets-Makin
 Kevlar Shock Cord: https://www.9km-outdoor.com/products/100-kevlar-line-string-40lb-2000lb-fishing-assist-cord-strong-made-with-kevlar?variant=39439583150243
 Quick Link: https://www.harborfreight.com/316-in-quick-links-3-piece-69062.html
 %}
+
+%% Ejection Charge Sizing
+airframe_ID = 3; % [in] inner airframe diameter
+bulkhead_area = pi*(airframe_ID/2)^2; % [in^2] area of bulkhead
+abort_system_length = 8; % [in]
+internal_pressure = 8.0:0.1:15; % [psi] internal pressure created by charge
+charge_force = internal_pressure.*bulkhead_area; % [lb]
+imperial_to_metric_conversion_factor = 0.000516; % to go from imperial units to metric charge size (grams)
+charge_size = imperial_to_metric_conversion_factor.*charge_force.*abort_system_length; % [g] ejection charge size (i.e., mass of black powder)
+
+shear_pin_2_strength = 25; % [lb] force required to break #2 size shear pin
+
+figure("Name", "Ejection Charge Size vs. Internal Pressure")
+hold on
+grid minor
+plot(internal_pressure, charge_size)
+xline(shear_pin_2_strength/bulkhead_area, '--', Label="1 Shear Pin")
+xline(2*shear_pin_2_strength/bulkhead_area, '--', Label="2 Shear Pins")
+xlabel("Internal Pressure $[psi]$", Interpreter="latex")
+ylabel("Ejection Charge Size $[g]$", Interpreter="latex")
+title("Ejection Charge Size $[g]$ vs. Internal Pressure $[psi]$", Interpreter="latex")
