@@ -8,6 +8,15 @@
 - Airbrakes controller example: https://docs.rocketpy.org/en/latest/user/airbrakes.html
 - STRONGLY consider branching from `master` before making any changes for TVC (https://docs.rocketpy.org/en/latest/development/style_guide.html)
 
+Planned Implementation Approach:
+
+1) Create new `u_dot_generalized` (line 1668 of `RocketPy/rocketpy/simulation/flight.py`) for powered descent flight phase
+
+    1) Will require implementing thrust vector resolution along different body axes
+    2) Will require implementing thrust vector controller
+2) Create new [FlightPhase](https://docs.rocketpy.org/en/latest/reference/classes/Flight.html#rocketpy.Flight.FlightPhases.FlightPhase) for powered descent
+3) Determine how to implement new flight phase in sequence with existing RocketPy flight phases
+
 ### Abort System
 #### Domain of Nominal Trajectories (DNT) Development
 - [ ] Investigate Monte Carlo analyses with launch inclination and heading uncertainties, and <u>varying wind velocities/directions</u>
