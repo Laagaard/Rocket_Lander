@@ -1,5 +1,5 @@
 # Libraries
-from rocketpy import Environment, SolidMotor, Rocket, TrapezoidalFins, Flight
+from rocketpy import Environment, SolidMotor, Rocket, Flight
 import math
 
 # Construct Launch Site Environment
@@ -23,7 +23,7 @@ CG_position_dry=0.07309 # [m] positiion of motor CG without propellant (relative
 AeroTechG25W = SolidMotor(
     thrust_source="AeroTechG25W_thrustcurve.csv", # [s, N]
     dry_mass=101.72/1000, # [kg]
-    dry_inertia=(235307.21/(10**(-9)), 235307.21/(10**(-9)), 13414.14/(10**(-9))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
+    dry_inertia=(235307.21*(1000**(-3)), 235307.21*(1000**(-3)), 13414.14*(1000**(-3))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
     nozzle_radius=7.70/2/1000, # [m] nozzle exit radius
     grain_number=1, # [unitless]
     grain_density=propellant_mass/(propellant_length*(math.pi*(propellant_OD/2)**2 - math.pi*(propellant_ID/2)**2)), # [kg/m^2]
@@ -42,14 +42,14 @@ AeroTechG25W = SolidMotor(
 )
 
 # Rocket Characteristics
-allowable_mass = 1.5 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22
-motor_mass = 2*(AeroTechG25W.propellant_initial_mass + AeroTechG25W.dry_mass) # [kg] total mass of both motors
+total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22
+motor_mass = AeroTechG25W.propellant_initial_mass + AeroTechG25W.dry_mass # [kg] total mass of ONE motor
 
 # Construct Rocket
 DART_rocket = Rocket(
-    radius=76.2/1000, # [m] largest outer radius
-    mass=allowable_mass - motor_mass, # [kg] dry mass of the rocket
-    inertia=(0.273645, 0.273645, 0.004784), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
+    radius=(3.28/2*25.4)/1000, # [m] largest outer radius
+    mass=total_mass - motor_mass, # [kg] dry mass of the rocket
+    inertia=(46065894.35*(1000**(-3)), 46057059.28*(1000**(-3)), 1796848.98*(1000**(-3)), 4106.46*(1000**(-3)), 53311.54*(1000**(-3)), 60557.58*(1000**(-3))), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
     power_off_drag=1.6939, # [unitless] C_D without motor firing
     power_on_drag=1.6939, # [unitless] C_D with motor firing
     center_of_mass_without_motor=0, # [m] position of the rocket CG w/o motors relative to the rocket's coordinate system
@@ -60,15 +60,14 @@ DART_rocket = Rocket(
 -------------------- Add Ascent Motor --------------------
 postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 '''
-DART_rocket.add_motor(AeroTechG25W, position=-0.7) # POSITION ARBITRARILY SET AND NEEDS TO BE UPDATED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+DART_rocket.add_motor(AeroTechG25W, position=-0.370869)
 
 '''
 -------------------- Add Rail Buttons --------------------
 upper_button_position: Position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: Position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rocket.set_rail_buttons(upper_button_position=-0.3, lower_button_position=-0.5) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED]
+DART_rocket.set_rail_buttons(upper_button_position=-0.1, lower_button_position=-0.3) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 '''
 -------------------- Add Nose Cone --------------------
@@ -76,22 +75,22 @@ length: [m] length of the nose cone (excluding the shoulder)
 kind: One of {Von Karman, conical, ogive, lvhaack, powerseries}
 position: [m] Nose cone tip coordinate relative to the rocket's coordinate system
 '''
-DART_rocket.add_nose(length=5.85*0.0254, kind="ogive", position=0.459, bluffness=0.6/1.5)
+DART_rocket.add_nose(length=0.145836, kind="ogive", position=0.389190, bluffness=0.6/1.5)
 
 # Construct Fins
-DART_fins = TrapezoidalFins(
+DART_fins = DART_rocket.add_trapezoidal_fins(
     n=3, # [unitless] number of fins
-    root_chord=6*0.0254, # [m] ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    tip_chord=4*0.0254, # [m] ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    span=4.5*0.0254, # [m] ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    rocket_radius=DART_rocket.radius, # [m] rocket reference radius used for lift coefficient normalization
+    root_chord=0.125223, # [m]
+    tip_chord=0.062611, # [m]
+    span=0.08636, # [m]
+    position=-0.244369, # [m]
     cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-    airfoil=("NACA0012.csv", "degrees"), # [CSV of (alpha,C_L), alpha provided in degrees]
+    airfoil=("NACA0012.csv", "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
 
 # Parachute Characteristics
 C_D = 0.84 # [unitless] parachute drag coefficient
-parachute_reference_area=math.pi*(0.762/2)**2 # [m^2] reference area of parachute
+parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
 
 # Construct Parachute
 main = DART_rocket.add_parachute(
@@ -100,10 +99,10 @@ main = DART_rocket.add_parachute(
     trigger="apogee", # will trigger the parachute deployment at apogee (can also use a callable function based on fresstream pressure, altitude, and state vector)
     sampling_rate=10, # [Hz] sampling rate in which the trigger function works (used to simulate sensor refresh rates)
     lag=0, # [s] time between the ejection system is triggers and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
-    noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlatio) used to add noise to the pressure signal
+    noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
 )
 
-flight_test = Flight(
+test_flight = Flight(
     rocket=DART_rocket,
     environment=launch_site,
     rail_length=1.5, # [m] length of the launch rail (NEED TO DOUBLE CHECK UNITS)
@@ -112,4 +111,6 @@ flight_test = Flight(
     time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
 )
 
-flight_test.all_info()
+DART_rocket.draw()
+test_flight.prints.all()
+test_flight.plots.trajectory_3d()

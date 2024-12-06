@@ -1,5 +1,7 @@
 # `simulation`
 ## Forward Work
+- [ ] Investigate [Generic Surfaces and Custom Aerodynamic Coefficients](https://docs.rocketpy.org/en/latest/user/rocket/generic_surface.html#generic-surfaces-and-custom-aerodynamic-coefficients)
+
 ### TVC Implementation (TOP PRIORITY)
 - See `RocketPy/rocketpy/simulation/flight.py` for state vector derivative code (line 1668)
 - See `RocketPy/rocketpy/control/controller.py` for the Controller class
