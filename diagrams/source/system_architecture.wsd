@@ -85,5 +85,6 @@ mindmapDiagram {
 ******* Connection Hardware <<componentNode>>
 *** Landing System <<subsubsystemNode>>
 **** Landing Legs <<componentNode>>
-***** Landing-Leg Release \nMechanism (LLRM) <<componentNode>>
+***** Landing Leg Hinges <<componentNode>>
+****** Landing-Leg Release \nMechanism (LLRM) <<componentNode>>
 @endmindmap
