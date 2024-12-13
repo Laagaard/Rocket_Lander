@@ -1,6 +1,7 @@
 *.mat
 *.slxc
 *.xml
+*.png
 *.mp4
 .vscode
 build
