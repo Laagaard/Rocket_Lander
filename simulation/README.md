@@ -19,41 +19,37 @@ Planned Implementation Approach:
 
 ### Abort System
 #### Domain of Nominal Trajectories (DNT) Development
-- [ ] Investigate Monte Carlo analyses with launch inclination and heading uncertainties, and <u>varying wind velocities/directions</u>
+1. Determine and implement method for finding optimal launch inclination and heading to achieve desired lateral displacment coordinates
 
-    - Goal: Determine method for generation of dispersion analysis within landing zone (i.e., determine method to obtain tolerable wind uncertainties for remaining within landing zone with some confidence level)
+    - [ ] Deliverable: Algorithm that takes desired `(x,y)` (in inertial coordinates) as input and returns the required trajectory (and, thereby, the required launch inclination and heading)
 
-- [ ] Implement Monte Carlo analyses with launch inclination and heading uncertainties, and <u>varying wind velocities/directions</u>
+2. Centered around the optimal trajectory, use Monte Carlo analyses (with launch inclination and heading uncertainties, and <u>varying wind velocities/directions</u>) to generate the DNT
 
-    - Goal: Generate dispersion analysis within landing zone (with confidence levels) based on wind velocity uncertainties
+    - [ ] Deliverable: "Spaghetti" plot illustrating the DNT
 
         - May be desired to generate confidence levels based on confidence of landing within landing zone <u>as well as</u> confidence of landing within safe region
 
-- [ ] Investigate/implement generation of DNT from Monte Carlo results via time-based ellipse (or other shape) cross-sections of flight envelope
+3. Output full state history information for all trajectories in a format suitable for further analysis
 
-    - Goal: Determine method for generation of the time-based plane defined by the acceptable positions
-    - Possible approach:
+    - Option(s) to Consider: CSV file of state history for each trajectory (located in a unique `.gitignore` directory)
 
-        1) Amalgamate Monte Carlo results
+4. Implement method for determining left & right bounds (in 2D inertial coordinates) of the DNT during each discretized time interval
 
-            1) Need each time step, 3D (inertial) positions of ALL trajectories at each time step, and 3D (inertial) velocities of ALL trajectories at each time step
+5. Implement method for determining upper and lower altitude limits (in 3D inertial coordinates) during each discretized time interval
 
-        2) At each time step, apply a best-fit ellipse to the edge[^1] points of the generated trajectories in 3D inertial space
-        
-            1) Define the center of the ellipse as the position of the center-most trajectory in the plane (or average of all trajectory positions)
-            2)  Define the normal vector (orientation) of the ellipse as the average unit velocity vector of all trajectories at the time index defining the plane
+6. Output all results to a CSV file
 
-                1) Other orientation possibilites:
+    - Format: `#, t_i, t_f, m_1, b_1, m_2, b_2, h_high, h_low` (but don't include the spaces)
 
-                    1) "Average" quaternion of all trajectories at the given time index?
-            3) End results:
-
-                1) Parameters $a$ and $b$ defining the ellipse shape according to $\frac{x^2}{a} + \frac{y^2}{b} \leq 1$
-                2) 3D inertial position describing the center of the ellipse
-                3) Parametrization describing the orientation of the ellipse in 3D inertial space
-        3) Create a callable function that takes in the complete geometry of the ellipse (in 3D inertial space) and a point in 3D inertial space, and returns (boolean?) whether or not the point projected onto the plane defined by the ellipse lies within the ellipse
-
-[^1]: "edge" may be defined with respect to landing within the landing zone <u>OR</u> just within a safe area
+        - `#`: discretization number
+        - `t_i`: lower time bound to which this discretization applies
+        - `t_f`: upper time bound to which this discretization applies
+        - `m_1`: slope of the line bounding the left edge of the DNT for this discretization ("left" defined as the launch operator standing at the inertial origin and looking downrange)
+        - `b_1`: y-intercept of the line bounding the left edge of the DNT for this discretization
+        - `m_2`: slope of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left" previously)
+        - `b_2`: y-intercept of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left" previously)
+        - `h_high`: upper altitude limit for this discretization
+        - `h_low`: lower altitude limit for this discretization
 
 #### Parachute Deployment Trigger Function
 - [ ] Investigate trigger function development (https://docs.rocketpy.org/en/latest/reference/classes/Parachute.html#parachute-class)
