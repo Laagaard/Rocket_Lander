@@ -147,7 +147,7 @@ P_dot = (M(1) - (I_zz - I_yy)*Q_body*R_body)/I_xx; % (rad/s^2)
 Q_dot = (M(2) - (I_xx - I_zz)*P_body*R_body)/I_yy; % (rad/s^2)
 R_dot = (M(3) - (I_yy - I_xx)*P_body*Q_body)/I_zz; % (rad/s^2)
 
-% animate_stl([x y z], q_body_2_inertial)
+animate_stl([x y z], q_body_2_inertial)
 
 % Accelerations in Inertial Frame
 linear_accelerations_inertial = quatrotate(q_body_2_inertial, linear_accelerations_body);
