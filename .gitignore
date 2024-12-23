@@ -2,6 +2,7 @@
 *.slxc
 *.xml
 *.mp4
-.vscode
-build
-libs
+.vscode/
+build/
+libs/
+__pycache__/

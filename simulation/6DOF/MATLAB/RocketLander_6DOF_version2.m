@@ -43,7 +43,7 @@ ratesOptions = [0 0];
 
 % Setup Animation
 global DART_stl orientation_animation trajectory_animation pos_tracked_X pos_tracked_Y pos_tracked_Z xdot_body ydot_body zdot_body
-% setup_animation(eul2quat([psi0 theta0 phi0]))
+setup_animation(eul2quat([psi0 theta0 phi0]))
 
 initial_launch_angle = pi/2 - abs(pi/2 - (theta0)) % [rad]
 
