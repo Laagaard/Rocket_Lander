@@ -80,16 +80,27 @@ solution_time = [solution_step[0] for solution_step in test_flight.solution] # [
 x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 250) # [m] x-interval to evaluate for plotting landing zone
 landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] upper edge of landing zone
 landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] lower edge of landing zone
+x_accuracy_square_interval = np.linspace(-impact_location_accuracy + landing_zone_x, impact_location_accuracy + landing_zone_x, 250) # [m] x-interval to evaluate for plotting accuracy square
+y_accuracy_square_interval = np.linspace(-impact_location_accuracy + landing_zone_y, impact_location_accuracy + landing_zone_y, 250) # [m] y-interval to evaluate for plotting accuracy square
+accuracy_square_top_edge = np.full(len(x_accuracy_square_interval), landing_zone_y + impact_location_accuracy) # [m] top edge of accuracy square
+accuracy_square_bottom_edge = np.full(len(x_accuracy_square_interval), landing_zone_y - impact_location_accuracy) # [m] bottom edge of accuracy square
+accuracy_square_left_edge = np.full(len(y_accuracy_square_interval), landing_zone_x - impact_location_accuracy) # [m] left edge of accuracy square
+accuracy_square_right_edge = np.full(len(y_accuracy_square_interval), landing_zone_x + impact_location_accuracy) # [m] right edge of accuracy square
 lateral_displacement_fig = plt.figure()
 lateral_displacement_ax = lateral_displacement_fig.add_subplot()
 lateral_displacement_ax.plot(landing_zone_x, landing_zone_y, 'r+') # plot center of the landing zone
-lateral_displacement_ax.plot(x_lz_interval, landing_zone_upper_edge, 'r-') # plot upper semi-circle of the landing zone
+lateral_displacement_ax.plot(x_lz_interval, landing_zone_upper_edge, 'r-', label="Landing Zone") # plot upper semi-circle of the landing zone
 lateral_displacement_ax.plot(x_lz_interval, landing_zone_lower_edge, 'r-') # plot lower semi-circle of the landing zone
-lateral_displacement_ax.plot(test_flight.x, test_flight.y, 'b') # plot trajectory
+lateral_displacement_ax.plot(x_accuracy_square_interval, accuracy_square_top_edge, 'k--', label="Accuracy Square") # plot top edge of accuracy square
+lateral_displacement_ax.plot(x_accuracy_square_interval, accuracy_square_bottom_edge, 'k--') # plot bottom edge of accuracy square
+lateral_displacement_ax.plot(accuracy_square_left_edge, y_accuracy_square_interval, 'k--') # plot left edge of accuracy square
+lateral_displacement_ax.plot(accuracy_square_right_edge, y_accuracy_square_interval, 'k--') # plot right edge of accuracy square
+lateral_displacement_ax.plot(test_flight.x(solution_time), test_flight.y(solution_time), 'b', label="Trajectory") # plot trajectory
 lateral_displacement_ax.set_xlabel("X - East [m]")
 lateral_displacement_ax.set_ylabel("Y - North [m]")
 lateral_displacement_ax.set_title("Lateral Displacement")
 lateral_displacement_ax.axis('equal') # set axis limits equivalent
+lateral_displacement_ax.legend(loc="best")
 # plt.close()
 
 # Trajectory Plot
