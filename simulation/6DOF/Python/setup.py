@@ -1,5 +1,5 @@
 # Libraries
-from rocketpy import Environment, SolidMotor, Rocket
+from rocketpy import Environment, SolidMotor, Rocket, prints
 import math
 import datetime
 
@@ -10,7 +10,7 @@ launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # lau
 est_timezone = datetime.timezone(datetime.timedelta(hours=-5)) # UTC to EST timezone conversion
 launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Convert provided time from UTC to EST
 
-# Construct Launch Site Environment
+# Construct Launch Site Environment(s)
 launch_site = Environment(
     date=launch_date_and_time, # launch date and time
     latitude=(27 + (55/60) + (58/3600)), # [deg] positive corresponds to North
@@ -18,10 +18,13 @@ launch_site = Environment(
     elevation=4, # [m] launch site elevation above sea level
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
-launch_site.process_windy_atmosphere() # Process data from Windy.com to retrieve atmospheric forecast data
+launch_site.set_atmospheric_model(type="Windy", file="ECMWF")
 
-# Print information and show plots of launch site conditions
-launch_site.info()
+# Run if the script is executed directly (i.e., not as a module)
+if __name__ == "__main__":
+    # Print information of launch site conditions
+    launch_site_prints = prints.environment_prints._EnvironmentPrints(launch_site)
+    launch_site_prints.all()
 
 # AeroTech-G25W Motor Characteristics
 propellant_length=0.09235 # [m] length of propellant grain
