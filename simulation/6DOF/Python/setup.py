@@ -1,11 +1,11 @@
 # Libraries
-from rocketpy import Environment, SolidMotor, Rocket, prints
-import math
 import datetime
+import math
+from rocketpy import Environment, SolidMotor, Rocket, prints
 
 # Establish Launch Date and Time (EST)
 launch_date = datetime.datetime.today().date() + datetime.timedelta(days=1) # targeted launch date
-launch_time = datetime.time(8, 00) # launch time (hr, min) (input as EST)
+launch_time = datetime.time(7, 00) # launch time (hr, min) (input as EST)
 launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
 est_timezone = datetime.timezone(datetime.timedelta(hours=-5)) # UTC to EST timezone conversion
 launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Convert provided time from UTC to EST
@@ -18,7 +18,15 @@ launch_site = Environment(
     elevation=4, # [m] launch site elevation above sea level
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
-launch_site.set_atmospheric_model(type="Windy", file="ECMWF")
+
+'''
+-------------------- Add Forecast (i.e., Wind) Information --------------------
+Ensemble, GEFS: 16 day forecast with 6-hour temporal resolution and 1-deg geographical resolution, updated every 6 hours (best forecast depth)
+Forecast, GFS: ~10 day forecast with 3-hour temporal resolution and 0.25-deg geographical resolution, updated every 6 hours (good balance)
+Forecast, RAP: 40 hour forecast with 1-hour temporal resolution and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
+Forecast, NAM: ~2.5 day forecast with 3-hour temporal resolution and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
+'''
+launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":

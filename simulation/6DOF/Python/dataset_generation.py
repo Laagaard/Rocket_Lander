@@ -1,10 +1,12 @@
 # Libraries
 import csv
-import numpy as np
-import matplotlib.pyplot as plt
 import math
-import sys
+from matplotlib.patches import Ellipse
+import matplotlib.pyplot as plt
+import numpy as np
 from rocketpy import Flight
+from skimage.measure import EllipseModel
+import sys
 from setup import DART_rocket, launch_site
 
 if (len(sys.argv) != 3): # check number of command line arguments (sys.argv[0] is the program name)
@@ -22,41 +24,30 @@ output_file = open("trajectory_dataset.csv", 'w', newline="") # output CSV file 
 writer = csv.writer(output_file) # CSV writer for output file containing optimal trajectory information
 writer.writerow(output_file_header) # write header row of output CSV file containing optimal trajectory information
 
-impact_location_accuracy = 1 # [m] simulation accuracy threshold w.r.t. desired landing location
-
-plt.ion()
 # Lateral Displacement Plot
 x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 250) # [m] x-interval to evaluate for plotting landing zone
 landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] upper edge of landing zone
 landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] lower edge of landing zone
 lateral_displacement_fig = plt.figure()
 lateral_displacement_ax = lateral_displacement_fig.add_subplot()
+lateral_displacement_ax.plot(0, 0, 'k.', label="Launch Site") # plot launch site (i.e., inertial CS origin)
 lateral_displacement_ax.plot(landing_zone_x, landing_zone_y, 'r+') # plot center of the landing zone
 lateral_displacement_ax.plot(x_lz_interval, landing_zone_upper_edge, 'r-', label="Landing Zone") # plot upper semi-circle of the landing zone
 lateral_displacement_ax.plot(x_lz_interval, landing_zone_lower_edge, 'r-') # plot lower semi-circle of the landing zone
 lateral_displacement_ax.set_xlabel("X - East [m]")
 lateral_displacement_ax.set_ylabel("Y - North [m]")
-lateral_displacement_ax.axis('equal') # set axis limits equivalent
 lateral_displacement_ax.grid(which="major", axis="both")
-lateral_displacement_ax.set_title(f"Trajectory & Landing Zone")
 
-# Accuracy Square
-x_accuracy_square_interval = np.linspace(-impact_location_accuracy + landing_zone_x, impact_location_accuracy + landing_zone_x, 250) # [m] x-interval to evaluate for plotting accuracy square
-y_accuracy_square_interval = np.linspace(-impact_location_accuracy + landing_zone_y, impact_location_accuracy + landing_zone_y, 250) # [m] y-interval to evaluate for plotting accuracy square
-accuracy_square_top_edge = np.full(len(x_accuracy_square_interval), landing_zone_y + impact_location_accuracy) # [m] top edge of accuracy square
-accuracy_square_bottom_edge = np.full(len(x_accuracy_square_interval), landing_zone_y - impact_location_accuracy) # [m] bottom edge of accuracy square
-accuracy_square_left_edge = np.full(len(y_accuracy_square_interval), landing_zone_x - impact_location_accuracy) # [m] left edge of accuracy square
-accuracy_square_right_edge = np.full(len(y_accuracy_square_interval), landing_zone_x + impact_location_accuracy) # [m] right edge of accuracy square
+x_impact_coords = np.array([]) # [m] list to track x-impact coordinates
+y_impact_coords = np.array([]) # [m] list to track y-impact coordinates
 
-landing_zone_coords = np.array([landing_zone_x, landing_zone_y]) # [m] inertial coordinates of desired landing zone center
+success_bool = False # boolean to track primary algorithm success (w.r.t largest best-fit ellipse encompassing landing zone coordinates)
+launch_inclination = 89 # [deg]
+launch_heading = 0 # [deg]
+inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a random plotting color
 
-print("\nSurface Wind Conditions:")
-print(f"Heading: {round(launch_site.wind_heading(launch_site.elevation), 2)} [deg], Direction: {round(launch_site.wind_direction(launch_site.elevation), 2)} [deg]")
-print(f"x_vel: {launch_site.wind_velocity_x(launch_site.elevation)} [m/s], y_vel: {launch_site.wind_velocity_y(launch_site.elevation)} [m/s] \n")
-
-for launch_inclination in np.arange(90, 70, -1): # iterate through launch inclinations [start, stop)
-    inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1))
-    for launch_heading in np.arange(0, 360, 5): # iterate through launch headings [start, stop)
+try:
+    while (not success_bool):
         test_flight = Flight(
             rocket=DART_rocket,
             environment=launch_site,
@@ -69,18 +60,40 @@ for launch_inclination in np.arange(90, 70, -1): # iterate through launch inclin
         trajectory_information = [test_flight.inclination, test_flight.heading, test_flight.x_impact, test_flight.y_impact]
         writer.writerow(trajectory_information) # write trajectory information to output CSV file
 
-        print(f"Inclination: {round(launch_inclination, 2)}, Heading: {round(launch_heading, 2)}, Apogee: {round(test_flight.apogee, 2)} [m]")
+        print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
 
-        if (launch_inclination == 90): # heading sweep is pointless if launching straight up
-            lateral_displacement_ax.plot(test_flight.x_impact, test_flight.y_impact, '.', color=inclination_color)
-            break
-        elif (launch_heading < 350):
-            lateral_displacement_ax.plot(test_flight.x_impact, test_flight.y_impact, '.', color=inclination_color)
-            continue
-        else:
-            lateral_displacement_ax.plot(test_flight.x_impact, test_flight.y_impact, '.', color=inclination_color)
-            lateral_displacement_ax.legend(loc="best")
-            plt.pause(0.5)
+        if (launch_heading < 360): # launch heading can be increased more
+            launch_heading += 5 # [deg] increase launch heading
+            x_impact_coords = np.append(x_impact_coords, np.array([test_flight.x_impact])) # [m] add newest x-impact coordinate to list of tracked coordinates
+            y_impact_coords = np.append(y_impact_coords, np.array([test_flight.y_impact])) # [m] add newest y-impact coordinate to list of tracked coordinates
+        else: # launch heading has reached maximum (practical) value (i.e., 360 deg)
+            launch_heading = 0 # [deg] reset launch heading
+            launch_inclination -= 1 # [deg] decrease launch inclination
+
+            x_impact_coords = np.append(x_impact_coords, np.array([test_flight.x_impact])) # [m] add newest x-impact coordinate to list of tracked coordinates
+            y_impact_coords = np.append(y_impact_coords, np.array([test_flight.y_impact])) # [m] add newest y-impact coordinate to list of tracked coordinates
+            impact_coords = np.concatenate((x_impact_coords.reshape(len(x_impact_coords), 1), y_impact_coords.reshape(len(y_impact_coords), 1)), axis=1)
+
+            ellipse = EllipseModel() # create best-fit ellipse model
+            if (ellipse.estimate(impact_coords)): # fit the best-fit model
+                ellipse_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor=inclination_color, facecolor="None")
+                lateral_displacement_ax.add_patch(ellipse_patch) # for some reason, this has to be here for the following if statement to work properly
+                if (ellipse_patch.contains_point(point=lateral_displacement_ax.transData.transform(values=(landing_zone_x, landing_zone_y)))):
+                    success_bool = True # largest best-fit ellipse encompasses landing zone coordinates
+            x_impact_coords = np.array([]) # reset list of x-impact coordinates
+            y_impact_coords = np.array([]) # reset list of ys-impact coordinates
+            inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
+except (IndexError, ValueError): # Error occurs when the inclination goes too low for RocketPy to handle
+    print("Inclination Too Low - Terminating Program")
 
 # Close output file
 output_file.close()
+
+if (success_bool):
+    print("Houston, we have an INTERPOLATION problem")
+else:
+    print("Houston, we have an EXTRAPOLATION problem")
+
+lateral_displacement_ax.axis('equal') # set axis limits equivalent
+lateral_displacement_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
+plt.show() # show the graph
