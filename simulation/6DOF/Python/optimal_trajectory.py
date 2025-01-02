@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from rocketpy import Flight
 from dataset_generation import landing_zone_x, landing_zone_y, x_lz_interval, landing_zone_upper_edge, landing_zone_lower_edge
-from setup import DART_rocket, launch_site
 
 df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 
@@ -16,22 +15,24 @@ optimal_inclination = inclination_interpolator.__call__(landing_zone_x, landing_
 heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df["Heading"])
 optimal_heading = heading_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch heading for desired landing zone center
 
-# Simulate the Flight with Optimal Launch Parameters
-test_flight = Flight(
-    rocket=DART_rocket,
-    environment=launch_site,
-    rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
-    inclination=optimal_inclination, # [deg] rail inclination relative to the ground
-    heading=optimal_heading, # [deg] heading angle relative to North (East = 90)
-    time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
-)
-
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
+    from setup import DART_rocket, launch_site
+
     print("\n---------- LAUNCH PARAMETERS ----------")
     print(f"Optimal Inclination: {np.round(optimal_inclination, 2)} deg")
     print(f"Optimal Heading: {np.round(optimal_heading, 2)} deg")
     print("---------------------------------------\n")
+
+    # Simulate the Flight with Optimal Launch Parameters
+    test_flight = Flight(
+        rocket=DART_rocket,
+        environment=launch_site,
+        rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
+        inclination=optimal_inclination, # [deg] rail inclination relative to the ground
+        heading=optimal_heading, # [deg] heading angle relative to North (East = 90)
+        time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
+    )
 
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
