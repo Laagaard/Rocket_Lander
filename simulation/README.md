@@ -21,7 +21,7 @@ Planned Implementation Approach:
 #### Domain of Nominal Trajectories (DNT) Development
 1. Determine and implement method for finding optimal launch inclination and heading to achieve desired lateral displacment coordinates
 
-    - [ ] Deliverable: Algorithm that takes desired `(x,y)` (in inertial coordinates) as input and returns the required trajectory (and, thereby, the required launch inclination and heading)
+    - [X] Deliverable: Algorithm that takes desired `(x,y)` (in inertial coordinates) as input and returns the required trajectory (and, thereby, the required launch inclination and heading)
 
 2. Centered around the optimal trajectory, use Monte Carlo analyses (with launch inclination and heading uncertainties, and <u>varying wind velocities/directions</u>) to generate the DNT
 

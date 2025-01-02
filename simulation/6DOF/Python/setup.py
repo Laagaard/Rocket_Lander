@@ -67,7 +67,7 @@ AeroTechG25W = SolidMotor(
 )
 
 # Rocket Characteristics
-total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22
+total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22 is 1500 grams
 motor_mass = AeroTechG25W.propellant_initial_mass + AeroTechG25W.dry_mass # [kg] total mass of ONE motor
 
 # Construct Rocket
@@ -92,7 +92,10 @@ DART_rocket.add_motor(AeroTechG25W, position=-0.370869)
 upper_button_position: Position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: Position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rocket.set_rail_buttons(upper_button_position=-0.1, lower_button_position=-0.3) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DART_rail_buttons = DART_rocket.set_rail_buttons(
+    upper_button_position=-0.1,
+    lower_button_position=-0.3
+) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 '''
 -------------------- Add Nose Cone --------------------
@@ -100,7 +103,12 @@ length: [m] length of the nose cone (excluding the shoulder)
 kind: One of {Von Karman, conical, ogive, lvhaack, powerseries}
 position: [m] Nose cone tip coordinate relative to the rocket's coordinate system
 '''
-DART_rocket.add_nose(length=0.145836, kind="ogive", position=0.389190, bluffness=0.6/1.5)
+DART_nose = DART_rocket.add_nose(
+    length=0.145836,
+    kind="ogive",
+    position=0.389190,
+    bluffness=0.6/1.5
+)
 
 # Construct Fins
 DART_fins = DART_rocket.add_trapezoidal_fins(

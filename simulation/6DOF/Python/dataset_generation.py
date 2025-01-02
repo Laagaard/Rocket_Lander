@@ -55,7 +55,7 @@ if __name__ == "__main__":
             test_flight = Flight(
                 rocket=DART_rocket,
                 environment=launch_site,
-                rail_length=1.5, # [m] length of the launch rail (NEED TO DOUBLE CHECK UNITS)
+                rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
                 inclination=launch_inclination, # [deg] rail inclination relative to the ground
                 heading=launch_heading, # [deg] heading angle relative to North (East = 90)
                 time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
