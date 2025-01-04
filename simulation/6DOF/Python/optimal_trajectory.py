@@ -5,7 +5,7 @@ import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
-from dataset_generation import landing_zone_x, landing_zone_y, x_lz_interval, landing_zone_upper_edge, landing_zone_lower_edge
+from dataset_generation import landing_zone_x, landing_zone_y
 
 df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 
@@ -16,10 +16,11 @@ optimal_inclination = inclination_interpolator.__call__(landing_zone_x, landing_
 heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df["Heading"])
 optimal_heading = heading_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch heading for desired landing zone center
 
-trajectory_csv_header = ["Time", "x_pos", "y_pos", "z_pos", "x_vel", "y_vel", "landing_zone_flag"] # CSV header for all Monte Carlo trajectory simulation files
+trajectory_csv_header = ["Time", "x_pos", "y_pos", "z_pos", "x_vel", "y_vel"] # CSV header for all Monte Carlo trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
+    from dataset_generation import landing_zone_patch
     from setup import DART_rocket, launch_site
 
     print("\n---------- LAUNCH PARAMETERS ----------")
@@ -45,7 +46,7 @@ if __name__ == "__main__":
 
     # Write data at each time step to the output CSV file
     for time_step in solution_time:
-        time_step_data = [time_step, test_flight.x(time_step), test_flight.y(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step), 1]
+        time_step_data = [time_step, test_flight.x(time_step), test_flight.y(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
         writer.writerow(time_step_data)
     output_file.close()
 
@@ -53,8 +54,7 @@ if __name__ == "__main__":
     trajectory_fig = plt.figure()
     trajectory_ax = trajectory_fig.add_subplot()
     trajectory_ax.plot(landing_zone_x, landing_zone_y, color='r', marker="+") # plot center of the landing zone
-    trajectory_ax.plot(x_lz_interval, landing_zone_upper_edge, color='r', label="Landing Zone") # plot upper semi-circle of the landing zone
-    trajectory_ax.plot(x_lz_interval, landing_zone_lower_edge, color='r') # plot lower semi-circle of the landing zone
+    trajectory_ax.add_patch(landing_zone_patch)
     trajectory_ax.plot(test_flight.x(solution_time), test_flight.y(solution_time), 'b', label="Trajectory")
     trajectory_ax.set_xlabel("X - East [m]")
     trajectory_ax.set_ylabel("Y - North [m]")

@@ -17,9 +17,20 @@ else:
 landing_zone_radius = 5 # [m] radius of desired landing zone
 desired_lateral_displacement = math.sqrt(landing_zone_x**2 + landing_zone_y**2) # [m] lateral displacement of desired landing zone center
 
-x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 250) # [m] x-interval to evaluate for plotting landing zone
+x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 25) # [m] x-interval to evaluate for plotting landing zone
 landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordiantes of upper edge of landing zone
 landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordinates of lower edge of landing zone
+
+landing_zone_upper_edge_np = np.asarray(a=landing_zone_upper_edge) # convert to numpy array
+landing_zone_lower_edge_np = np.asarray(a=landing_zone_lower_edge) # convert to numpy array
+
+full_x_lz_interval = np.concatenate((x_lz_interval.reshape(len(x_lz_interval), 1), x_lz_interval.reshape(len(x_lz_interval), 1)), axis=0) # [m] column vector of duplicated landing zone edge x-coordinates
+full_y_lz_coords = np.concatenate((landing_zone_upper_edge_np.reshape(len(landing_zone_upper_edge_np), 1), landing_zone_lower_edge_np.reshape(len(landing_zone_lower_edge_np), 1)), axis=0) # [m] column vector of landing zone edge y-coordinates
+full_lz_coords = np.concatenate((full_x_lz_interval, full_y_lz_coords), axis=1) # [m] complete landing zone coordinates
+
+ellipse = EllipseModel() # create best-fit ellipse model
+if (ellipse.estimate(full_lz_coords)): # fit the best-fit model
+    landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
@@ -36,8 +47,7 @@ if __name__ == "__main__":
     lateral_displacement_ax = lateral_displacement_fig.add_subplot()
     lateral_displacement_ax.plot(0, 0, 'k.', label="Launch Site") # plot launch site (i.e., inertial CS origin)
     lateral_displacement_ax.plot(landing_zone_x, landing_zone_y, 'r+') # plot center of the landing zone
-    lateral_displacement_ax.plot(x_lz_interval, landing_zone_upper_edge, 'r-', label="Landing Zone") # plot upper semi-circle of the landing zone
-    lateral_displacement_ax.plot(x_lz_interval, landing_zone_lower_edge, 'r-') # plot lower semi-circle of the landing zone
+    lateral_displacement_ax.add_patch(landing_zone_patch) # for some reason, this has to be here for the following if statement to work properly
     lateral_displacement_ax.set_xlabel("X - East [m]")
     lateral_displacement_ax.set_ylabel("Y - North [m]")
     lateral_displacement_ax.grid(which="major", axis="both")
