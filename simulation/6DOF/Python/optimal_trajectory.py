@@ -1,4 +1,5 @@
 # Libraries
+import csv
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
@@ -14,6 +15,8 @@ inclination_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df
 optimal_inclination = inclination_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch inclination for desired landing zone center
 heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df["Heading"])
 optimal_heading = heading_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch heading for desired landing zone center
+
+trajectory_csv_header = ["Time", "x_pos", "y_pos", "z_pos", "x_vel", "y_vel", "landing_zone_flag"] # CSV header for all Monte Carlo trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
@@ -35,6 +38,16 @@ if __name__ == "__main__":
     )
 
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
+
+    output_file = open("optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
+    writer = csv.writer(output_file) # CSV writer for output file containing trajectory information
+    writer.writerow(trajectory_csv_header) # write header row of output CSV file containing optimal trajectory information
+
+    # Write data at each time step to the output CSV file
+    for time_step in solution_time:
+        time_step_data = [time_step, test_flight.x(time_step), test_flight.y(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step), 1]
+        writer.writerow(time_step_data)
+    output_file.close()
 
     # Trajectory Plot
     trajectory_fig = plt.figure()

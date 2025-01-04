@@ -7,3 +7,4 @@
 build/
 libs/
 __pycache__/
+monte_carlo_trajectories/
