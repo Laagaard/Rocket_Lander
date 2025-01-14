@@ -1,104 +1,148 @@
 # Libraries
+import contextily as cx
 import csv
+import geopandas as gpd
 import math
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from rocketpy import Flight
 from skimage.measure import EllipseModel
 import sys
+from setup import DART_rocket, launch_site
 
-if (len(sys.argv) != 3): # check number of command line arguments (sys.argv[0] is the program name)
-    landing_zone_x = 30 # [m] inertial x coordinate of desired landing zone center
-    landing_zone_y = 40 # [m] inertial y coordinate of desired landing zone center
-else:
-    landing_zone_x = int(sys.argv[1]) # [m] inertial x coordinate of desired landing zone center
-    landing_zone_y = int(sys.argv[2]) # [m] inertial y coordinate of desired landing zone center
-landing_zone_radius = 5 # [m] radius of desired landing zone
-desired_lateral_displacement = math.sqrt(landing_zone_x**2 + landing_zone_y**2) # [m] lateral displacement of desired landing zone center
+'''
+Distance between whole-number longitudes at launch site
+Source: https://gis.stackexchange.com/questions/251643/approx-distance-between-any-2-longitudes-at-a-given-latitude/251662#251662
+'''
+longitude_separation = math.radians(90 - launch_site.latitude) * 111321 # [m] distance between whole-number longitudes at launch site
+landing_zone_radius = 5/longitude_separation # [deg] radius of desired landing zone
 
-x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 25) # [m] x-interval to evaluate for plotting landing zone
-landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordiantes of upper edge of landing zone
-landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordinates of lower edge of landing zone
+gdf_launch_site = gpd.GeoDataFrame(data={"latitude": [launch_site.latitude],
+                                         "longitude": [launch_site.longitude],
+                                         "color": "launch_site"},
+                                    geometry=gpd.points_from_xy([launch_site.longitude], [launch_site.latitude])) # create GeoDataFrame from lat/longs
 
-landing_zone_upper_edge_np = np.asarray(a=landing_zone_upper_edge) # convert to numpy array
-landing_zone_lower_edge_np = np.asarray(a=landing_zone_lower_edge) # convert to numpy array
+landing_zone_lats = [27.935514, 27.935504, 27.935499, 27.934703, 27.934706, 27.933877, 27.933002, 27.932312, 27.932334, 27.932334, 27.932334] # [deg] coordinates of landing zone centers (clockwise around launch site)
+landing_zone_longs = [-80.711389, -80.710455, -80.709524, -80.709506, -80.708361, -80.708351, -80.708350, -80.708283, -80.709533, -80.710461, -80.711391] # [deg] coordinates of landing zone centers (clockwise around launch site)
 
-full_x_lz_interval = np.concatenate((x_lz_interval.reshape(len(x_lz_interval), 1), x_lz_interval.reshape(len(x_lz_interval), 1)), axis=0) # [m] column vector of duplicated landing zone edge x-coordinates
-full_y_lz_coords = np.concatenate((landing_zone_upper_edge_np.reshape(len(landing_zone_upper_edge_np), 1), landing_zone_lower_edge_np.reshape(len(landing_zone_lower_edge_np), 1)), axis=0) # [m] column vector of landing zone edge y-coordinates
-full_lz_coords = np.concatenate((full_x_lz_interval, full_y_lz_coords), axis=1) # [m] complete landing zone coordinates
+gdf_landing_zone_centers = gpd.GeoDataFrame(data={"latitude": landing_zone_lats,
+                                                  "longitude": landing_zone_longs,
+                                                  "color": "landing_zone"},
+                                            geometry=gpd.points_from_xy(landing_zone_longs, landing_zone_lats)) # create GeoDataFrame from lat/longs
 
-ellipse = EllipseModel() # create best-fit ellipse model
-if (ellipse.estimate(full_lz_coords)): # fit the best-fit model
-    landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
+# gdf_landing_zone_perimeters_series = gdf_landing_zone_centers.buffer(distance=landing_zone_radius) # GeoSeries of landing zone circles
+
+gdf_landing_zone_perimeters = gdf_landing_zone_centers.copy(deep=True)
+gdf_landing_zone_perimeters["geometry"] = gdf_landing_zone_perimeters["geometry"].buffer(distance=landing_zone_radius)
+
+total_gdf = pd.concat([gdf_launch_site, gdf_landing_zone_centers, gdf_landing_zone_perimeters])
+
+landing_zone_perimeters_series = [perimeter for perimeter in gdf_landing_zone_perimeters.geometry]
+
+all_landing_zone_perimeters = [] # list to store lat/long coordinates of landing zone perimeters
+for perimeter in landing_zone_perimeters_series:
+    longitudes = np.reshape(perimeter.boundary.coords.xy[0], (len(perimeter.boundary.coords.xy[0]), 1))
+    latitudes = np.reshape(perimeter.boundary.coords.xy[1], (len(perimeter.boundary.coords.xy[1]), 1))
+    coords = np.concatenate((longitudes, latitudes), axis=1)
+    all_landing_zone_perimeters.append(coords)
+all_landing_zone_perimeters = np.array(all_landing_zone_perimeters)
+
+# if (len(sys.argv) != 3): # check number of command line arguments (sys.argv[0] is the program name)
+#     landing_zone_x = 30 # [m] inertial x coordinate of desired landing zone center
+#     landing_zone_y = 40 # [m] inertial y coordinate of desired landing zone center
+# else:
+#     landing_zone_x = int(sys.argv[1]) # [m] inertial x coordinate of desired landing zone center
+#     landing_zone_y = int(sys.argv[2]) # [m] inertial y coordinate of desired landing zone center
+# desired_lateral_displacement = math.sqrt(landing_zone_x**2 + landing_zone_y**2) # [m] lateral displacement of desired landing zone center
+
+# x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 25) # [m] x-interval to evaluate for plotting landing zone
+# landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordiantes of upper edge of landing zone
+# landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordinates of lower edge of landing zone
+
+# landing_zone_upper_edge_np = np.asarray(a=landing_zone_upper_edge) # convert to numpy array
+# landing_zone_lower_edge_np = np.asarray(a=landing_zone_lower_edge) # convert to numpy array
+
+# full_x_lz_interval = np.concatenate((x_lz_interval.reshape(len(x_lz_interval), 1), x_lz_interval.reshape(len(x_lz_interval), 1)), axis=0) # [m] column vector of duplicated landing zone edge x-coordinates
+# full_y_lz_coords = np.concatenate((landing_zone_upper_edge_np.reshape(len(landing_zone_upper_edge_np), 1), landing_zone_lower_edge_np.reshape(len(landing_zone_lower_edge_np), 1)), axis=0) # [m] column vector of landing zone edge y-coordinates
+# full_lz_coords = np.concatenate((full_x_lz_interval, full_y_lz_coords), axis=1) # [m] complete landing zone coordinates
+
+# ellipse = EllipseModel() # create best-fit ellipse model
+# if (ellipse.estimate(full_lz_coords)): # fit the best-fit model
+#     landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from setup import DART_rocket, launch_site
-
     # CSV Output File
     output_file_header = ["Inclination", "Heading", "x_impact", "y_impact"] # header of output CSV file containing trajectory information
     output_file = open("trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
     writer = csv.writer(output_file) # CSV writer for output file containing optimal trajectory information
     writer.writerow(output_file_header) # write header row of output CSV file containing optimal trajectory information
 
+    plt.ion()
     # Lateral Displacement Plot
     lateral_displacement_fig = plt.figure()
     lateral_displacement_ax = lateral_displacement_fig.add_subplot()
-    lateral_displacement_ax.plot(0, 0, 'k.', label="Launch Site") # plot launch site (i.e., inertial CS origin)
-    lateral_displacement_ax.plot(landing_zone_x, landing_zone_y, 'r+') # plot center of the landing zone
-    lateral_displacement_ax.add_patch(landing_zone_patch) # for some reason, this has to be here for the following if statement to work properly
-    lateral_displacement_ax.set_xlabel("X - East [m]")
-    lateral_displacement_ax.set_ylabel("Y - North [m]")
+    total_gdf.plot(ax=lateral_displacement_ax, column="color", facecolor="none", markersize=4)
+    lateral_displacement_ax.set_xlabel("Longitude [deg]")
+    lateral_displacement_ax.tick_params(axis='x', labelrotation=45)
+    lateral_displacement_ax.set_ylabel("Latitude [deg]")
     lateral_displacement_ax.grid(which="major", axis="both")
 
-    x_impact_coords = np.array([]) # [m] list to track x-impact coordinates
-    y_impact_coords = np.array([]) # [m] list to track y-impact coordinates
+    impact_longs = np.array([]) # [m] list to track impact longitudes
+    impact_lats = np.array([]) # [m] list to track impact latitudes
 
     success_bool = False # boolean to track primary algorithm success (w.r.t largest best-fit ellipse encompassing landing zone coordinates)
     launch_inclination = 89 # [deg]
     launch_heading = 0 # [deg]
     inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a random plotting color
 
-    try:
-        while (not success_bool):
-            test_flight = Flight(
-                rocket=DART_rocket,
-                environment=launch_site,
-                rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
-                inclination=launch_inclination, # [deg] rail inclination relative to the ground
-                heading=launch_heading, # [deg] heading angle relative to North (East = 90)
-                time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
-            ) # run trajectory simulation
+    # try:
+    while (not success_bool):
+        test_flight = Flight(
+            rocket=DART_rocket,
+            environment=launch_site,
+            rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
+            inclination=launch_inclination, # [deg] rail inclination relative to the ground
+            heading=launch_heading, # [deg] heading angle relative to North (East = 90)
+            time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
+        ) # run trajectory simulation
 
-            trajectory_information = [test_flight.inclination, test_flight.heading, test_flight.x_impact, test_flight.y_impact]
-            writer.writerow(trajectory_information) # write trajectory information to output CSV file
+        solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
-            print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
+        impact_longitude = test_flight.longitude(solution_time)[-1] # [deg] longitude of impact location
+        impact_latitude = test_flight.latitude(solution_time)[-1] # [deg] latitude of impact location
 
-            if (launch_heading < 360): # launch heading can be increased more
-                launch_heading += 5 # [deg] increase launch heading
-                x_impact_coords = np.append(x_impact_coords, np.array([test_flight.x_impact])) # [m] add newest x-impact coordinate to list of tracked coordinates
-                y_impact_coords = np.append(y_impact_coords, np.array([test_flight.y_impact])) # [m] add newest y-impact coordinate to list of tracked coordinates
-            else: # launch heading has reached maximum (practical) value (i.e., 360 deg)
-                launch_heading = 0 # [deg] reset launch heading
-                launch_inclination -= 1 # [deg] decrease launch inclination
+        trajectory_information = [test_flight.inclination, test_flight.heading, impact_longitude, impact_latitude]
+        writer.writerow(trajectory_information) # write trajectory information to output CSV file
 
-                x_impact_coords = np.append(x_impact_coords, np.array([test_flight.x_impact])) # [m] add newest x-impact coordinate to list of tracked coordinates
-                y_impact_coords = np.append(y_impact_coords, np.array([test_flight.y_impact])) # [m] add newest y-impact coordinate to list of tracked coordinates
-                impact_coords = np.concatenate((x_impact_coords.reshape(len(x_impact_coords), 1), y_impact_coords.reshape(len(y_impact_coords), 1)), axis=1)
+        print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
 
-                ellipse = EllipseModel() # create best-fit ellipse model
-                if (ellipse.estimate(impact_coords)): # fit the best-fit model
-                    ellipse_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor=inclination_color, facecolor="None")
-                    lateral_displacement_ax.add_patch(ellipse_patch) # for some reason, this has to be here for the following if statement to work properly
-                    if (ellipse_patch.contains_point(point=lateral_displacement_ax.transData.transform(values=(landing_zone_x, landing_zone_y)))):
+        if (launch_heading < 360): # launch heading can be increased more
+            launch_heading += 5 # [deg] increase launch heading
+            impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest impact longitude to list of tracked longitudes
+            impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time[-1])])) # [m] add newest impact latitude to list of tracked latitudes
+        else: # launch heading has reached maximum (practical) value (i.e., 360 deg)
+            launch_heading = 0 # [deg] reset launch heading
+            launch_inclination -= 1 # [deg] decrease launch inclination
+
+            impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest x-impact coordinate to list of tracked coordinates
+            impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time)[-1]])) # [m] add newest y-impact coordinate to list of tracked coordinates
+            impact_coords = np.concatenate((impact_longs.reshape(len(impact_longs), 1), impact_lats.reshape(len(impact_lats), 1)), axis=1)
+            ellipse = EllipseModel() # create best-fit ellipse model
+            if (ellipse.estimate(impact_coords)): # fit the best-fit model to the impact coordinates
+                ellipse_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor=inclination_color, facecolor="None")
+                # lateral_displacement_ax.plot(impact_longs, impact_lats, '.', color=inclination_color)
+                lateral_displacement_ax.add_patch(ellipse_patch) # for some reason, this has to be here for the following if statement to work properly
+                plt.pause(0.5)
+                for perimeter_coords in all_landing_zone_perimeters:
+                    if (all(ellipse_patch.contains_points(points=lateral_displacement_ax.transData.transform(values=perimeter_coords)))):
                         success_bool = True # largest best-fit ellipse encompasses landing zone coordinates
-                x_impact_coords = np.array([]) # reset list of x-impact coordinates
-                y_impact_coords = np.array([]) # reset list of ys-impact coordinates
-                inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
-    except (IndexError, ValueError): # Error occurs when the inclination goes too low for RocketPy to handle
-        print("Inclination Too Low - Terminating Program")
+                        break
+            impact_longs = np.array([]) # reset list of x-impact coordinates
+            impact_lats = np.array([]) # reset list of ys-impact coordinates
+            inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
 
     # Close output file
     output_file.close()
