@@ -1,26 +1,29 @@
 # Libraries
+import contextily as cx
 import csv
+import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+from mpl_toolkits.basemap import Basemap
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
-from dataset_generation import landing_zone_x, landing_zone_y
 
-df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
+trajectory_dataset_df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
+optimal_landing_zone_df = pd.read_csv("optimal_landing_zone.csv") # read optimal landing zone information into dataframe
 
 # Determine Optimal Launch Inclination & Heading
-impact_triangulation = mtri.Triangulation(x=df["x_impact"], y=df["y_impact"])
-inclination_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df["Inclination"])
-optimal_inclination = inclination_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch inclination for desired landing zone center
-heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=df["Heading"])
-optimal_heading = heading_interpolator.__call__(landing_zone_x, landing_zone_y) # [deg] optimal launch heading for desired landing zone center
+impact_triangulation = mtri.Triangulation(x=trajectory_dataset_df["longitude"], y=trajectory_dataset_df["latitude"])
+inclination_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajectory_dataset_df["Inclination"])
+optimal_inclination = inclination_interpolator.__call__(optimal_landing_zone_df["longitude"][0], optimal_landing_zone_df["latitude"][0]) # [deg] optimal launch inclination for optimal landing zone center
+heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajectory_dataset_df["Heading"])
+optimal_heading = heading_interpolator.__call__(optimal_landing_zone_df["longitude"][0], optimal_landing_zone_df["latitude"][0]) # [deg] optimal launch heading for optimal landing zone center
 
-trajectory_csv_header = ["Time", "x_pos", "y_pos", "z_pos", "x_vel", "y_vel"] # CSV header for all Monte Carlo trajectory simulation files
+trajectory_csv_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "y_vel"] # CSV header for all Monte Carlo trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from dataset_generation import landing_zone_patch
+    from dataset_generation import launch_area_ax
     from setup import DART_rocket, launch_site
 
     print("\n---------- LAUNCH PARAMETERS ----------")
@@ -46,20 +49,11 @@ if __name__ == "__main__":
 
     # Write data at each time step to the output CSV file
     for time_step in solution_time:
-        time_step_data = [time_step, test_flight.x(time_step), test_flight.y(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
+        time_step_data = [time_step, test_flight.longitude(time_step), test_flight.latitude(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
         writer.writerow(time_step_data)
     output_file.close()
 
-    # Trajectory Plot
-    trajectory_fig = plt.figure()
-    trajectory_ax = trajectory_fig.add_subplot()
-    trajectory_ax.plot(landing_zone_x, landing_zone_y, color='r', marker="+") # plot center of the landing zone
-    trajectory_ax.add_patch(landing_zone_patch)
-    trajectory_ax.plot(test_flight.x(solution_time), test_flight.y(solution_time), 'b', label="Trajectory")
-    trajectory_ax.set_xlabel("X - East [m]")
-    trajectory_ax.set_ylabel("Y - North [m]")
-    trajectory_ax.set_title(f"Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
-    trajectory_ax.grid(which="major", axis="both")
-    trajectory_ax.axis('equal') # set axis limits equivalent
-    trajectory_ax.legend(loc="best")
+    launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
+    launch_area_ax.set_title(f"Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
+    launch_area_ax.legend(loc="best")
     plt.show()
