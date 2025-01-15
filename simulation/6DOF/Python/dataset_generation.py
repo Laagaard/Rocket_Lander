@@ -6,11 +6,15 @@ import math
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 from rocketpy import Flight
+import shutil
 from skimage.measure import EllipseModel
-import sys
+import stat
 from setup import DART_rocket, launch_site
+
+figures_output_dir = "figures" # output directory for matplotlib figures
 
 '''
 Distance between whole-number longitudes at launch site
@@ -34,8 +38,6 @@ gdf_landing_zone_centers = gpd.GeoDataFrame(data={"longitude": landing_zone_long
                                             geometry=gpd.points_from_xy(landing_zone_longs, landing_zone_lats),
                                             crs="EPSG:4326") # create GeoDataFrame from lat/longs
 
-# gdf_landing_zone_perimeters_series = gdf_landing_zone_centers.buffer(distance=landing_zone_radius) # GeoSeries of landing zone circles
-
 gdf_landing_zone_perimeters = gdf_landing_zone_centers.copy(deep=True)
 gdf_landing_zone_perimeters.crs = "epsg:4326" # establish CRS for GeoDataFrame with landing zone perimeters
 gdf_landing_zone_perimeters = gdf_landing_zone_perimeters.to_crs(crs=3857) # transition GeoDataFrame with landing zone perimeters to projected coordinate system
@@ -53,29 +55,6 @@ for perimeter in landing_zone_perimeters_series:
 all_landing_zone_perimeters = np.array(all_landing_zone_perimeters)
 
 total_gdf = pd.concat([gdf_launch_site, gdf_landing_zone_centers, gdf_landing_zone_perimeters])
-
-# if (len(sys.argv) != 3): # check number of command line arguments (sys.argv[0] is the program name)
-#     landing_zone_x = 30 # [m] inertial x coordinate of desired landing zone center
-#     landing_zone_y = 40 # [m] inertial y coordinate of desired landing zone center
-# else:
-#     landing_zone_x = int(sys.argv[1]) # [m] inertial x coordinate of desired landing zone center
-#     landing_zone_y = int(sys.argv[2]) # [m] inertial y coordinate of desired landing zone center
-# desired_lateral_displacement = math.sqrt(landing_zone_x**2 + landing_zone_y**2) # [m] lateral displacement of desired landing zone center
-
-# x_lz_interval = np.linspace(-landing_zone_radius + landing_zone_x, landing_zone_radius + landing_zone_x, 25) # [m] x-interval to evaluate for plotting landing zone
-# landing_zone_upper_edge = [math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordiantes of upper edge of landing zone
-# landing_zone_lower_edge = [-math.sqrt(landing_zone_radius**2 - (x - landing_zone_x)**2) + landing_zone_y for x in x_lz_interval] # [m] y-coordinates of lower edge of landing zone
-
-# landing_zone_upper_edge_np = np.asarray(a=landing_zone_upper_edge) # convert to numpy array
-# landing_zone_lower_edge_np = np.asarray(a=landing_zone_lower_edge) # convert to numpy array
-
-# full_x_lz_interval = np.concatenate((x_lz_interval.reshape(len(x_lz_interval), 1), x_lz_interval.reshape(len(x_lz_interval), 1)), axis=0) # [m] column vector of duplicated landing zone edge x-coordinates
-# full_y_lz_coords = np.concatenate((landing_zone_upper_edge_np.reshape(len(landing_zone_upper_edge_np), 1), landing_zone_lower_edge_np.reshape(len(landing_zone_lower_edge_np), 1)), axis=0) # [m] column vector of landing zone edge y-coordinates
-# full_lz_coords = np.concatenate((full_x_lz_interval, full_y_lz_coords), axis=1) # [m] complete landing zone coordinates
-
-# ellipse = EllipseModel() # create best-fit ellipse model
-# if (ellipse.estimate(full_lz_coords)): # fit the best-fit model
-#     landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
 
 # Figure of Launch Site and Landing Zones Overlaid on Satellite Image Base Layer
 launch_area_ax = total_gdf.plot(column="color", facecolor="none", markersize=4)
@@ -157,7 +136,6 @@ if __name__ == "__main__":
     if (success_bool):
         print("Houston, we have an INTERPOLATION problem")
         optimal_index = np.where(np.any(all_landing_zone_perimeters == perimeter_coords, axis=(1,2)))[0][0]
-        print(optimal_index)
         optimal_landing_zone_information = [optimal_index, gdf_landing_zone_centers["longitude"][optimal_index], gdf_landing_zone_centers["latitude"][optimal_index]]
         optimal_landing_zone_writer.writerow(optimal_landing_zone_information)
     else:
@@ -165,6 +143,15 @@ if __name__ == "__main__":
         optimal_landing_zone_writer.writerow(["None", "None"])
     optimal_landing_zone_output_file.close()
 
-    # launch_area_ax.axis('equal') # set axis limits equivalent
+    # Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
+    def remove_readonly(func, path, excinfo):
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+
+    if os.path.exists(figures_output_dir):
+        shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(figures_output_dir) # Create folder for CSV files of DNT simulation data
+
     launch_area_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
+    plt.savefig(f"{figures_output_dir}/impact_ellipses.png") # save the figure
     plt.show() # show the graph

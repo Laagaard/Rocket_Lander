@@ -7,4 +7,6 @@
 build/
 libs/
 __pycache__/
-monte_carlo_trajectories/
+dnt_trajectories/
+figures/
+trajectory_dataset.csv

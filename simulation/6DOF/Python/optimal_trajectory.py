@@ -12,6 +12,8 @@ from rocketpy import Flight
 trajectory_dataset_df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 optimal_landing_zone_df = pd.read_csv("optimal_landing_zone.csv") # read optimal landing zone information into dataframe
 
+landing_zone_number = optimal_landing_zone_df["index"][0] + 1
+
 # Determine Optimal Launch Inclination & Heading
 impact_triangulation = mtri.Triangulation(x=trajectory_dataset_df["longitude"], y=trajectory_dataset_df["latitude"])
 inclination_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajectory_dataset_df["Inclination"])
@@ -23,10 +25,11 @@ trajectory_csv_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from dataset_generation import launch_area_ax
+    from dataset_generation import figures_output_dir, launch_area_ax
     from setup import DART_rocket, launch_site
 
     print("\n---------- LAUNCH PARAMETERS ----------")
+    print(f"Landing Zone: {landing_zone_number}")
     print(f"Optimal Inclination: {np.round(optimal_inclination, 2)} deg")
     print(f"Optimal Heading: {np.round(optimal_heading, 2)} deg")
     print("---------------------------------------\n")
@@ -56,4 +59,5 @@ if __name__ == "__main__":
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
     launch_area_ax.set_title(f"Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
     launch_area_ax.legend(loc="best")
+    plt.savefig(f"{figures_output_dir}/optimal_trajectory.png")
     plt.show()
