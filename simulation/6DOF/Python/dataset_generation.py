@@ -16,12 +16,7 @@ from setup import DART_rocket, launch_site
 
 figures_output_dir = "figures" # output directory for matplotlib figures
 
-'''
-Distance between whole-number longitudes at launch site
-Source: https://gis.stackexchange.com/questions/251643/approx-distance-between-any-2-longitudes-at-a-given-latitude/251662#251662
-'''
-longitude_separation = math.radians(90 - launch_site.latitude) * 111321 # [m] distance between whole-number longitudes at launch site
-landing_zone_radius = 5#/longitude_separation # [deg] radius of desired landing zone
+landing_zone_radius = 5 # [m] radius of desired landing zone
 
 gdf_launch_site = gpd.GeoDataFrame(data={"longitude": [launch_site.longitude],
                                          "latitude": [launch_site.latitude],

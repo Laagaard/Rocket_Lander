@@ -15,15 +15,9 @@ launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Convert p
 Establish Launch Site Latitude & Longitude
 Source 1: Google Maps
 https://www.google.com/maps/@27.933873,-80.7094486,55m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D
-Source 2: Google Earth
-https://earth.google.com/web/search/Shensi+Court+Southwest,+Palm+Bay,+FL/@27.93387537,-80.70951646,4.27275193a,56.70160954d,35y,0h,0t,0r/data=CiwiJgokCRD3KlBuEzxAEahVO2xREzxAGRaYSW9RLFTAIb7wR-FhLFTAQgIIATIpCicKJQohMVdmT0QtMmw4aVhhZnZkNnNQOW50UW1aTUtPX2FKUExoIAE6AwoBMEICCABKCAjEyZTsBRAB
 '''
-launch_site_latitude_google_maps = 27.933880 # [deg] North
-launch_site_longitude_google_maps = -80.709505 # [deg] West
-launch_site_latitude_google_earth = 27.933611 # [deg] North
-launch_site_longitude_google_earth = -80.709444 # [deg] West
-launch_site_latitude = statistics.mean([launch_site_latitude_google_maps, launch_site_latitude_google_earth]) # [deg] average latitude of above sources
-launch_site_longitude = statistics.mean([launch_site_longitude_google_maps, launch_site_longitude_google_earth]) # [deg] average longitude of above sources
+launch_site_latitude = 27.933880 # [deg] North, launch site latitude
+launch_site_longitude = -80.709505 # [deg] West, launch site longitude
 
 # Construct Launch Site Environment
 launch_site = Environment(
