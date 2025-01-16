@@ -1,13 +1,73 @@
 # Libraries
-from rocketpy import Environment, SolidMotor, Rocket, Flight
+import datetime
 import math
+import os
+from rocketpy import Environment, SolidMotor, Rocket, prints
+import stat
+import sys
+
+# Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
+def remove_readonly(func, path, excinfo):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+results_dir = "Results"
+
+if os.path.exists(results_dir):
+    None
+else:
+    os.mkdir(results_dir) # Create folder for all results for the given date/time
+
+# Establish Launch Date and Time (EST)
+if (len(sys.argv) != 1): # sys.argv[0] is the program name
+    launch_date = datetime.datetime.strptime(sys.argv[1], "%m-%d-%Y") # launch date
+    launch_hour = int(sys.argv[2])
+    launch_minute = int(sys.argv[3])
+    launch_time = datetime.time(hour=launch_hour, minute=launch_minute) # # launch time (hr, min) (input as EST)
+    launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
+else: # use current date and time if none provided on the command line
+    launch_date_and_time = datetime.datetime.now() # launch date and time
+
+est_timezone = datetime.timezone(datetime.timedelta(hours=-5)) # UTC to EST timezone conversion
+launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Ensure time used is EST
+
+'''
+Establish Launch Site Latitude & Longitude
+Source 1: Google Maps
+https://www.google.com/maps/@27.933873,-80.7094486,55m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D
+'''
+launch_site_latitude = 27.933880 # [deg] North, launch site latitude
+launch_site_longitude = -80.709505 # [deg] West, launch site longitude
 
 # Construct Launch Site Environment
 launch_site = Environment(
-    latitude=(27 + (55/60) + (58/3600)), # [deg] positive corresponds to North
-    longitude=-(80 + (42/60) + (30/3600)), # [deg] positive corresponds to East
-    elevation=4 # [m] launch site elevation above sea level
+    date=launch_date_and_time, # launch date and time
+    latitude=launch_site_latitude, # [deg] positive corresponds to North
+    longitude=launch_site_longitude, # [deg] positive corresponds to East
+    elevation=4, # [m] launch site elevation above sea level
+    max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
+
+'''
+-------------------- Add Forecast (i.e., Wind) Information --------------------
+Ensemble, GEFS: 65 points spaced by 4 hours and 1-deg geographical resolution, updated every 6 hours (best forecast depth) (00, 06, 12, 18UTC)
+Forecast, GFS: 81 points spaced by 3 hours and 0.25-deg geographical resolution, updated every 6 hours (good balance)
+Forecast, RAP: 40 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
+Forecast, NAM: 21 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
+'''
+hours_until_launch = (launch_site.local_date - datetime.datetime.now(est_timezone)).total_seconds()/3600 # number of hours until the launch time
+if (hours_until_launch < 40): # launch time is less than ~1.67 days in the future
+    launch_site.set_atmospheric_model(type="Forecast", file="RAP")
+elif (hours_until_launch < 81*3): # launch time is less than 10.125 days in the future
+    launch_site.set_atmospheric_model(type="Forecast", file="GFS")
+elif (hours_until_launch < 65*4): # launch time is less than 16.25 days in the future
+    launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
+
+# Run if the script is executed directly (i.e., not as a module)
+if __name__ == "__main__":
+    # Print information of launch site conditions
+    launch_site_prints = prints.environment_prints._EnvironmentPrints(launch_site)
+    launch_site_prints.all()
 
 # AeroTech-G25W Motor Characteristics
 propellant_length=0.09235 # [m] length of propellant grain
@@ -42,7 +102,7 @@ AeroTechG25W = SolidMotor(
 )
 
 # Rocket Characteristics
-total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22
+total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 101.22 is 1500 grams
 motor_mass = AeroTechG25W.propellant_initial_mass + AeroTechG25W.dry_mass # [kg] total mass of ONE motor
 
 # Construct Rocket
@@ -67,7 +127,10 @@ DART_rocket.add_motor(AeroTechG25W, position=-0.370869)
 upper_button_position: Position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: Position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rocket.set_rail_buttons(upper_button_position=-0.1, lower_button_position=-0.3) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DART_rail_buttons = DART_rocket.set_rail_buttons(
+    upper_button_position=-0.1,
+    lower_button_position=-0.3
+) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 '''
 -------------------- Add Nose Cone --------------------
@@ -75,7 +138,12 @@ length: [m] length of the nose cone (excluding the shoulder)
 kind: One of {Von Karman, conical, ogive, lvhaack, powerseries}
 position: [m] Nose cone tip coordinate relative to the rocket's coordinate system
 '''
-DART_rocket.add_nose(length=0.145836, kind="ogive", position=0.389190, bluffness=0.6/1.5)
+DART_nose = DART_rocket.add_nose(
+    length=0.145836,
+    kind="ogive",
+    position=0.389190,
+    bluffness=0.6/1.5
+)
 
 # Construct Fins
 DART_fins = DART_rocket.add_trapezoidal_fins(

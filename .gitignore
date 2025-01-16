@@ -7,3 +7,8 @@
 build/
 libs/
 __pycache__/
+dnt_trajectories/
+figures/
+optimal_landing_zone.csv
+optimal_trajectory.csv
+trajectory_dataset.csv
