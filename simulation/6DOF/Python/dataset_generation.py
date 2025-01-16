@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # CSV Output File
     trajectory_dataset_output_file_header = ["Inclination", "Heading", "longitude", "latitude"] # header of output CSV file containing trajectory information
-    trajectory_dataset_output_file = open("trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
+    trajectory_dataset_output_file = open(f"{date_dir}/trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
     trajectory_dataset_writer = csv.writer(trajectory_dataset_output_file) # CSV writer for output file containing optimal trajectory information
     trajectory_dataset_writer.writerow(trajectory_dataset_output_file_header) # write header row of output CSV file containing optimal trajectory information
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     trajectory_dataset_output_file.close()
 
     # Optimal Landing Zone Parameters Output File
-    optimal_landing_zone_output_file = open("optimal_landing_zone.csv", mode="w", newline="")
+    optimal_landing_zone_output_file = open(f"{date_dir}/optimal_landing_zone.csv", mode="w", newline="")
     optimal_landing_zone_writer = csv.writer(optimal_landing_zone_output_file) # CSV writer for output file containing optimal landing zone information
     optimal_landing_zone_writer.writerow(["index", "longitude", "latitude"]) # write header row of output CSV file containing optimal landing zone information
 

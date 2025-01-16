@@ -5,9 +5,10 @@ import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
+from dataset_generation import date_dir
 
-trajectory_dataset_df = pd.read_csv("trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
-optimal_landing_zone_df = pd.read_csv("optimal_landing_zone.csv") # read optimal landing zone information into dataframe
+trajectory_dataset_df = pd.read_csv(f"{date_dir}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
+optimal_landing_zone_df = pd.read_csv(f"{date_dir}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
 
 landing_zone_number = optimal_landing_zone_df["index"][0] + 1
 
@@ -43,7 +44,7 @@ if __name__ == "__main__":
 
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
-    output_file = open("optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
+    output_file = open(f"{date_dir}/optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
     writer = csv.writer(output_file) # CSV writer for output file containing trajectory information
     writer.writerow(trajectory_csv_header) # write header row of output CSV file containing optimal trajectory information
 
