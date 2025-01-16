@@ -1,0 +1,10 @@
+name: generate_dnts
+on:
+    schedule:
+        - cron: "45 7 * * *"
+jobs:
+    iterate_through_datetime_possibilities:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+            - run: .\generate_dnts.bat

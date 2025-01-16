@@ -11,10 +11,12 @@ import pandas as pd
 from rocketpy import Flight
 import shutil
 from skimage.measure import EllipseModel
-import stat
-from setup import DART_rocket, launch_site
+from setup import DART_rocket, launch_site, remove_readonly, results_dir
 
-figures_output_dir = "figures" # output directory for matplotlib figures
+date_format_string = "%Y-%m-%d-%H-%M-%S"
+date_dir = f"{results_dir}/{launch_site.local_date.strftime(date_format_string)}"
+
+figures_output_dir = f"{date_dir}/figures" # output directory for matplotlib figures
 
 landing_zone_radius = 5 # [m] radius of desired landing zone
 
@@ -61,6 +63,14 @@ launch_area_ax.grid(which="major", axis="both")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
+    if os.path.exists(date_dir):
+        shutil.rmtree(date_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(date_dir) # Create folder for all results for the given date/time
+
+    if os.path.exists(figures_output_dir):
+        shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(figures_output_dir) # Create folder for all results for the given date/time
+
     # CSV Output File
     trajectory_dataset_output_file_header = ["Inclination", "Heading", "longitude", "latitude"] # header of output CSV file containing trajectory information
     trajectory_dataset_output_file = open("trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
@@ -137,15 +147,6 @@ if __name__ == "__main__":
         print("Houston, we have an EXTRAPOLATION problem")
         optimal_landing_zone_writer.writerow(["None", "None"])
     optimal_landing_zone_output_file.close()
-
-    # Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
-    def remove_readonly(func, path, excinfo):
-        os.chmod(path, stat.S_IWRITE)
-        func(path)
-
-    if os.path.exists(figures_output_dir):
-        shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(figures_output_dir) # Create folder for CSV files of DNT simulation data
 
     launch_area_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
     plt.savefig(f"{figures_output_dir}/impact_ellipses.png") # save the figure

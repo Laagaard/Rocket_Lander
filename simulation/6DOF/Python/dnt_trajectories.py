@@ -6,10 +6,9 @@ import os
 import pandas as pd
 from rocketpy import Flight
 import shutil
-import stat
-from dataset_generation import figures_output_dir, launch_area_ax, all_landing_zone_perimeters
+from dataset_generation import figures_output_dir, date_dir, launch_area_ax, all_landing_zone_perimeters
 
-CSV_output_dir = "dnt_trajectories"
+CSV_output_dir = f"{date_dir}/dnt_trajectories"
 
 optimal_landing_zone_df = pd.read_csv("optimal_landing_zone.csv") # df of optimal landing zone information
 
@@ -18,13 +17,12 @@ number_of_perimeter_points = max(optimal_perimeter_coords.shape) # number of poi
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from optimal_trajectory import trajectory_csv_header, inclination_interpolator, heading_interpolator
-    from setup import launch_site, DART_rocket
+    if os.path.exists(CSV_output_dir):
+        shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(CSV_output_dir) # Create folder for all DNT trajectories
 
-    # Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
-    def remove_readonly(func, path, excinfo):
-        os.chmod(path, stat.S_IWRITE)
-        func(path)
+    from optimal_trajectory import trajectory_csv_header, inclination_interpolator, heading_interpolator
+    from setup import launch_site, DART_rocket, remove_readonly
 
     if os.path.exists(CSV_output_dir):
         shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
@@ -80,4 +78,4 @@ if __name__ == "__main__":
 
     print(f"\n---------- SIMULATION RESULTS ----------")
     print(f"Trajectories Attempted: {number_of_perimeter_points}")
-    print(f"Trajectories Usable: {iteration_counter}\n")
+    print(f"Trajectories Used: {iteration_counter}\n")

@@ -1,15 +1,35 @@
 # Libraries
 import datetime
 import math
+import os
 from rocketpy import Environment, SolidMotor, Rocket, prints
-import statistics
+import stat
+import sys
+
+# Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
+def remove_readonly(func, path, excinfo):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+results_dir = "Results"
+
+if os.path.exists(results_dir):
+    None
+else:
+    os.mkdir(results_dir) # Create folder for all results for the given date/time
 
 # Establish Launch Date and Time (EST)
-launch_date = datetime.datetime.today().date() + datetime.timedelta(days=1) # targeted launch date
-launch_time = datetime.time(7, 00) # launch time (hr, min) (input as EST)
-launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
+if (len(sys.argv) != 1): # sys.argv[0] is the program name
+    launch_date = datetime.datetime.strptime(sys.argv[1], "%m-%d-%Y") # launch date
+    launch_hour = int(sys.argv[2])
+    launch_minute = int(sys.argv[3])
+    launch_time = datetime.time(hour=launch_hour, minute=launch_minute) # # launch time (hr, min) (input as EST)
+    launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
+else: # use current date and time if none provided on the command line
+    launch_date_and_time = datetime.datetime.now() # launch date and time
+
 est_timezone = datetime.timezone(datetime.timedelta(hours=-5)) # UTC to EST timezone conversion
-launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Convert provided time from UTC to EST
+launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Ensure time used is EST
 
 '''
 Establish Launch Site Latitude & Longitude
@@ -30,12 +50,18 @@ launch_site = Environment(
 
 '''
 -------------------- Add Forecast (i.e., Wind) Information --------------------
-Ensemble, GEFS: 16 day forecast with 6-hour temporal resolution and 1-deg geographical resolution, updated every 6 hours (best forecast depth)
-Forecast, GFS: ~10 day forecast with 3-hour temporal resolution and 0.25-deg geographical resolution, updated every 6 hours (good balance)
-Forecast, RAP: 40 hour forecast with 1-hour temporal resolution and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
-Forecast, NAM: ~2.5 day forecast with 3-hour temporal resolution and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
+Ensemble, GEFS: 65 points spaced by 4 hours and 1-deg geographical resolution, updated every 6 hours (best forecast depth) (00, 06, 12, 18UTC)
+Forecast, GFS: 81 points spaced by 3 hours and 0.25-deg geographical resolution, updated every 6 hours (good balance)
+Forecast, RAP: 40 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
+Forecast, NAM: 21 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
 '''
-launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
+hours_until_launch = (launch_site.local_date - datetime.datetime.now(est_timezone)).total_seconds()/3600 # number of hours until the launch time
+if (hours_until_launch < 40): # launch time is less than ~1.67 days in the future
+    launch_site.set_atmospheric_model(type="Forecast", file="RAP")
+elif (hours_until_launch < 81*3): # launch time is less than 10.125 days in the future
+    launch_site.set_atmospheric_model(type="Forecast", file="GFS")
+elif (hours_until_launch < 65*4): # launch time is less than 16.25 days in the future
+    launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":

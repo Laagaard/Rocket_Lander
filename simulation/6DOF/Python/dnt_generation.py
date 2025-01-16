@@ -8,7 +8,7 @@ import os
 import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
-from dataset_generation import figures_output_dir, launch_area_ax
+from dataset_generation import date_dir, figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 from setup import launch_site_longitude, launch_site_latitude
 
@@ -127,7 +127,7 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
         time_vector.append(timestep_current_lower_bound) # append current lower time bound to the time array
         timestep_current_lower_bound += dnt_temporal_resolution # increment current time step
 
-output_file = open("DNT.csv", 'w', newline="") # output CSV file containing DNT information
+output_file = open(f"{date_dir}/DNT.csv", 'w', newline="") # output CSV file containing DNT information
 writer = csv.writer(output_file) # CSV writer for output file containing DNT information
 writer.writerow(["#","t_i","t_f","m_1","b_1","m_2","b_2","h_high","h_low"]) # write header row of output CSV file containing DNT information
 

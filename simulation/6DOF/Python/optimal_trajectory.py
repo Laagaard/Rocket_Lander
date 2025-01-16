@@ -1,10 +1,7 @@
 # Libraries
-import contextily as cx
 import csv
-import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-from mpl_toolkits.basemap import Basemap
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
