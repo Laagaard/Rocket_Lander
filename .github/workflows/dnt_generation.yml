@@ -1,12 +1,8 @@
 name: generate_dnts
 
-defaults:
-    run:
-        working-directory: .\Rocket_Lander\
-
 on:
     schedule:
-        - cron: "45 7 * * *"
+        - cron: "30 22 * * *"
 jobs:
     setup:
         runs-on: windows-latest
@@ -24,5 +20,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - run: |
+                ls
                 cd .\simulation\6DOF\Python\
                 ls
+                .\generate_dnts.bat
