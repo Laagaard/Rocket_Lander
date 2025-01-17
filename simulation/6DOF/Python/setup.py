@@ -163,6 +163,8 @@ DART_fins = DART_rocket.add_trapezoidal_fins(
     airfoil=("NACA0012.csv", "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
 
+launch_rail_length = 1.8034 # [m] 71-inch rail (NEEDS TO BE REFINED TO ONLY THE LENGTH IN WHICH THE ROCKET WILL BE ATTACHED TO THE RAIL)
+
 # Parachute Characteristics
 C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute

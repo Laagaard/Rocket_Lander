@@ -14,10 +14,14 @@ from scipy.spatial import ConvexHull
 import shutil
 from setup import automation_flag, DART_rocket, launch_site, remove_readonly, results_dir
 
-date_format_string = "%Y-%m-%d-%H-%M-%S"
-date_dir = f"{results_dir}/{launch_site.local_date.strftime(date_format_string)}"
+date_format_string_date_only = "%Y-%m-%d"
+date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
+date_dir_date_only = f"{results_dir}/{date_string_date_only}"
+date_format_string_time_only = "%Y-%m-%d-%H-%M-%S"
+date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
+date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
 
-figures_output_dir = f"{date_dir}/figures" # output directory for matplotlib figures
+figures_output_dir = f"{date_dir_with_time}/figures" # output directory for matplotlib figures
 
 landing_zone_radius = 5 # [m] radius of desired landing zone
 
@@ -64,9 +68,13 @@ launch_area_ax.grid(which="major", axis="both")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    if os.path.exists(date_dir):
-        shutil.rmtree(date_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(date_dir) # Create folder for all results for the given date/time
+    if os.path.exists(date_dir_date_only):
+        shutil.rmtree(date_dir_date_only, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(date_dir_date_only) # Create folder for all results for the given date
+
+    if os.path.exists(date_dir_with_time):
+        shutil.rmtree(date_dir_with_time, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    os.mkdir(date_dir_with_time) # Create folder for all results for the given date/time
 
     if os.path.exists(figures_output_dir):
         shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
@@ -74,7 +82,7 @@ if __name__ == "__main__":
 
     # CSV Output File
     trajectory_dataset_output_file_header = ["Inclination", "Heading", "longitude", "latitude"] # header of output CSV file containing trajectory information
-    trajectory_dataset_output_file = open(f"{date_dir}/trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
+    trajectory_dataset_output_file = open(f"{date_dir_with_time}/trajectory_dataset.csv", 'w', newline="") # output CSV file containing optimal trajectory information
     trajectory_dataset_writer = csv.writer(trajectory_dataset_output_file) # CSV writer for output file containing optimal trajectory information
     trajectory_dataset_writer.writerow(trajectory_dataset_output_file_header) # write header row of output CSV file containing optimal trajectory information
 
@@ -135,7 +143,7 @@ if __name__ == "__main__":
     trajectory_dataset_output_file.close()
 
     # Optimal Landing Zone Parameters Output File
-    optimal_landing_zone_output_file = open(f"{date_dir}/optimal_landing_zone.csv", mode="w", newline="")
+    optimal_landing_zone_output_file = open(f"{date_dir_with_time}/optimal_landing_zone.csv", mode="w", newline="")
     optimal_landing_zone_writer = csv.writer(optimal_landing_zone_output_file) # CSV writer for output file containing optimal landing zone information
     optimal_landing_zone_writer.writerow(["index", "longitude", "latitude"]) # write header row of output CSV file containing optimal landing zone information
 

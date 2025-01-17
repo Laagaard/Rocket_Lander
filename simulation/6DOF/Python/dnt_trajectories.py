@@ -6,18 +6,18 @@ import os
 import pandas as pd
 from rocketpy import Flight
 import shutil
-from dataset_generation import figures_output_dir, date_dir, launch_area_ax, all_landing_zone_perimeters
+from dataset_generation import figures_output_dir, date_dir_with_time, launch_area_ax, all_landing_zone_perimeters
 
-CSV_output_dir = f"{date_dir}/dnt_trajectories"
+CSV_output_dir = f"{date_dir_with_time}/dnt_trajectories"
 
-optimal_landing_zone_df = pd.read_csv(f"{date_dir}/optimal_landing_zone.csv") # df of optimal landing zone information
+optimal_landing_zone_df = pd.read_csv(f"{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
 
 optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter
 number_of_perimeter_points = max(optimal_perimeter_coords.shape) # number of points comprising the optimal landing zone perimeter
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from optimal_trajectory import trajectory_csv_header, inclination_interpolator, heading_interpolator
+    from optimal_trajectory import trajectory_state_history_header, inclination_interpolator, heading_interpolator
     from setup import automation_flag, launch_site, DART_rocket, remove_readonly
 
     if os.path.exists(CSV_output_dir):
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
     os.mkdir(CSV_output_dir) # Create folder for CSV files of DNT simulation data
 
-    optimal_trajectory_df = pd.read_csv(f"{date_dir}/optimal_trajectory.csv") # df of optimal trajectory data
+    optimal_trajectory_df = pd.read_csv(f"{date_dir_with_time}/optimal_trajectory.csv") # df of optimal trajectory data
 
     # Plot DNT Impact Locations
     launch_area_ax.plot(optimal_trajectory_df["longitude"], optimal_trajectory_df["latitude"], 'b', label="Optimal Trajectory")
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
         output_file = open(f"{CSV_output_dir}/trajectory_" + str(iteration_counter) + ".csv", 'w', newline="") # output CSV file containing trajectory information
         writer = csv.writer(output_file) # CSV writer for output file containing trajectory information
-        writer.writerow(trajectory_csv_header) # write header row of output CSV file containing optimal trajectory information
+        writer.writerow(trajectory_state_history_header) # write header row of output CSV file containing optimal trajectory information
 
         # Write data at each time step to the output CSV file
         for time_step in solution_time:

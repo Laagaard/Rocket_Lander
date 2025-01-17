@@ -1,14 +1,15 @@
 # Libraries
 import csv
+import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
-from dataset_generation import date_dir
+from dataset_generation import date_dir_date_only, date_dir_with_time, date_string_date_only, date_string_time_only
 
-trajectory_dataset_df = pd.read_csv(f"{date_dir}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
-optimal_landing_zone_df = pd.read_csv(f"{date_dir}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
+trajectory_dataset_df = pd.read_csv(f"{date_dir_with_time}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
+optimal_landing_zone_df = pd.read_csv(f"{date_dir_with_time}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
 
 landing_zone_number = optimal_landing_zone_df["index"][0] + 1
 
@@ -19,7 +20,8 @@ optimal_inclination = inclination_interpolator.__call__(optimal_landing_zone_df[
 heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajectory_dataset_df["Heading"])
 optimal_heading = heading_interpolator.__call__(optimal_landing_zone_df["longitude"][0], optimal_landing_zone_df["latitude"][0]) # [deg] optimal launch heading for optimal landing zone center
 
-trajectory_csv_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "y_vel"] # CSV header for all Monte Carlo trajectory simulation files
+launch_information_header = ["DateTime", "Landing Zone", "Inclincation", "Heading", "Impact_Angle"] # CSV header for optimal trajectory launch information
+trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "y_vel"] # CSV header for all DNT trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
@@ -45,15 +47,25 @@ if __name__ == "__main__":
 
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
-    output_file = open(f"{date_dir}/optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
-    writer = csv.writer(output_file) # CSV writer for output file containing trajectory information
-    writer.writerow(trajectory_csv_header) # write header row of output CSV file containing optimal trajectory information
+    horz_vel = math.sqrt(test_flight.vx(solution_time)[-1]**2 + test_flight.vy(solution_time)[-1]**2) # [m/s] inertial horizontal velocity at impact
+    vert_vel = test_flight.vz(solution_time)[-1] # [m/s] inertial vertical velocity at impact
+    final_angle = math.degrees(math.atan2(vert_vel, horz_vel)) # [deg] inclination (angle relative to vertical) at impact
+
+    launch_information_file = open(f"{date_dir_date_only}/{date_string_date_only}.csv", 'w', newline="")
+    launch_information_writer = csv.writer(launch_information_file) # CSV writer for output file containing optimal trajectory launch information
+    launch_information_writer.writerow(launch_information_header) # write header row of output CSV file containing optimal trajectory launch information
+    launch_information_writer.writerow([date_string_time_only, landing_zone_number, optimal_inclination, optimal_heading, final_angle])
+    launch_information_file.close()
+
+    trajectory_state_history_file = open(f"{date_dir_with_time}/optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
+    trajectory_state_history_writer = csv.writer(trajectory_state_history_file) # CSV writer for output file containing trajectory information
+    trajectory_state_history_writer.writerow(trajectory_state_history_header) # write header row of output CSV file containing optimal trajectory information
 
     # Write data at each time step to the output CSV file
     for time_step in solution_time:
         time_step_data = [time_step, test_flight.longitude(time_step), test_flight.latitude(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
-        writer.writerow(time_step_data)
-    output_file.close()
+        trajectory_state_history_writer.writerow(time_step_data)
+    trajectory_state_history_file.close()
 
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
     launch_area_ax.set_title(f"Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
