@@ -2,25 +2,22 @@ name: generate_dnts
 
 on:
     schedule:
-        - cron: "30 22 * * *"
+        - cron: "10 1 * * *"
 jobs:
-    setup:
+    iterate_datetime_possibilities:
         runs-on: windows-latest
         steps:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
                 python-version: '3.x'
+            - name: Checkout repository
+              uses: actions/checkout@v4
             - name: Install dependencies
-              run:  |
+              run: |
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
-    iterate_datetime_possibilities:
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v4
-            - run: |
-                ls
+            - name: Run DNT automation script
+              run: |
                 cd .\simulation\6DOF\Python\
-                ls
                 .\generate_dnts.bat
