@@ -3,14 +3,15 @@ import contextily as cx
 import csv
 import geopandas as gpd
 import math
-from matplotlib.patches import Ellipse
+from matplotlib.patches import PathPatch
+from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 from rocketpy import Flight
+from scipy.spatial import ConvexHull
 import shutil
-from skimage.measure import EllipseModel
 from setup import DART_rocket, launch_site, remove_readonly, results_dir
 
 date_format_string = "%Y-%m-%d-%H-%M-%S"
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     impact_longs = np.array([]) # [m] list to track impact longitudes
     impact_lats = np.array([]) # [m] list to track impact latitudes
 
-    success_bool = False # boolean to track primary algorithm success (w.r.t largest best-fit ellipse encompassing landing zone coordinates)
+    success_bool = False # boolean to track primary algorithm success (w.r.t largest Path encompassing an entire landing zone)
     launch_inclination = 89 # [deg]
     launch_heading = 0 # [deg]
     inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a random plotting color
@@ -117,16 +118,14 @@ if __name__ == "__main__":
             impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest x-impact coordinate to list of tracked coordinates
             impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time)[-1]])) # [m] add newest y-impact coordinate to list of tracked coordinates
             impact_coords = np.concatenate((impact_longs.reshape(len(impact_longs), 1), impact_lats.reshape(len(impact_lats), 1)), axis=1)
-            ellipse = EllipseModel() # create best-fit ellipse model
-            if (ellipse.estimate(impact_coords)): # fit the best-fit model to the impact coordinates
-                ellipse_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor=inclination_color, facecolor="None")
-                launch_area_ax.add_patch(ellipse_patch) # for some reason, this has to be here for the following if statement to work properly
-                for perimeter_coords in all_landing_zone_perimeters:
-                    if (all(ellipse_patch.contains_points(points=launch_area_ax.transData.transform(values=perimeter_coords)))):
-                        success_bool = True # largest best-fit ellipse encompasses landing zone coordinates
-                        break
-            impact_longs = np.array([]) # reset list of x-impact coordinates
-            impact_lats = np.array([]) # reset list of ys-impact coordinates
+            hull = ConvexHull(points=impact_coords) # fit convex hull to all impact locations
+            hull_path = Path(vertices=impact_coords[hull.vertices], closed=True) # create a Path with the hull vertices, only works for 2D points
+            hull_path_patch = PathPatch(path=hull_path, edgecolor=inclination_color, facecolor="None") # create a Patch of the path (for plotting)
+            launch_area_ax.add_patch(hull_path_patch) # for some reason, this has to be here for the following if statement to work properly
+            for perimeter_coords in all_landing_zone_perimeters:
+                if (all(hull_path.contains_points(points=perimeter_coords))): # check if the path encompasses an entire landing zone
+                    success_bool = True # the path encompasses an entire landing zone
+                    break
             inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
 
     # Close trajectory dataset output file
@@ -149,5 +148,5 @@ if __name__ == "__main__":
     optimal_landing_zone_output_file.close()
 
     launch_area_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
-    plt.savefig(f"{figures_output_dir}/impact_ellipses.png") # save the figure
+    plt.savefig(f"{figures_output_dir}/impact_area.png") # save the figure
     plt.show() # show the graph
