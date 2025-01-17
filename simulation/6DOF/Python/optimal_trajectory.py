@@ -24,13 +24,14 @@ trajectory_csv_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     from dataset_generation import figures_output_dir, launch_area_ax
-    from setup import DART_rocket, launch_site
+    from setup import automation_flag, DART_rocket, launch_site
 
-    print("\n---------- LAUNCH PARAMETERS ----------")
-    print(f"Landing Zone: {landing_zone_number}")
-    print(f"Optimal Inclination: {np.round(optimal_inclination, 2)} deg")
-    print(f"Optimal Heading: {np.round(optimal_heading, 2)} deg")
-    print("---------------------------------------\n")
+    if (not bool(automation_flag)):
+        print("\n---------- LAUNCH PARAMETERS ----------")
+        print(f"Landing Zone: {landing_zone_number}")
+        print(f"Optimal Inclination: {np.round(optimal_inclination, 2)} deg")
+        print(f"Optimal Heading: {np.round(optimal_heading, 2)} deg")
+        print("---------------------------------------\n")
 
     # Simulate the Flight with Optimal Launch Parameters
     test_flight = Flight(

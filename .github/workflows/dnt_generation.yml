@@ -1,8 +1,8 @@
 name: generate_dnts
 
-on: push
-    # schedule:
-        # - cron: 20 2 * * *
+on:
+    schedule:
+      - cron: 45 6 * * *
 jobs:
     iterate_datetime_possibilities:
         runs-on: windows-latest

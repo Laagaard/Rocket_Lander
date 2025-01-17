@@ -10,7 +10,7 @@ from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
 from dataset_generation import date_dir, figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
-from setup import launch_site_longitude, launch_site_latitude
+from setup import automation_flag, launch_site_longitude, launch_site_latitude
 
 dnt_temporal_resolution = 0.25 # [s] time-step of each DNT discretization
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization
@@ -22,7 +22,7 @@ dnt_upper_altitudes = [] # [m] z-coordinate comprising the upper boundary of eac
 dnt_lower_altitudes = [] # [m] z-coordinate comprising the lower boundary of each DNT discretization
 time_vector = [0] # [s] time array
 
-optimal_df = pd.read_csv("optimal_trajectory.csv") # df of optimal trajectory data
+optimal_df = pd.read_csv(f"{date_dir}/optimal_trajectory.csv") # df of optimal trajectory data
 
 test_longitudes = [] # [m] list to track x-coordinates of test points
 test_latitudes = [] # [m] list to track y-coordinates of test points
@@ -42,7 +42,8 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
     launch_area_ax.add_patch(landing_zone_patch)
     # Loop until the optimal trajectory enters the landing zone
     while (not landing_zone_patch.contains_point(point=launch_area_ax.transData.transform(values=(reference_longitude, reference_latitude)))):
-        print(f"Current Time: {timestep_current_lower_bound}")
+        if (not bool(automation_flag)):
+            print(f"Current Time: {timestep_current_lower_bound}")
         time_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
         optimal_idx = (optimal_df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
         reference_longitude = optimal_df["longitude"][optimal_idx] # [m] longitude coordinate of reference location

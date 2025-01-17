@@ -25,6 +25,10 @@ if (len(sys.argv) != 1): # sys.argv[0] is the program name
     launch_minute = int(sys.argv[3])
     launch_time = datetime.time(hour=launch_hour, minute=launch_minute) # # launch time (hr, min) (input as EST)
     launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
+    if (len(sys.argv) > 4):
+        automation_flag = int(sys.argv[4]) # flag to signal the program is being executed by an automatic runner
+    else:
+        automation_flag = 0 # the program is being executed manually
 else: # use current date and time if none provided on the command line
     launch_date_and_time = datetime.datetime.now() # launch date and time
 
@@ -53,12 +57,13 @@ launch_site = Environment(
 Ensemble, GEFS: 65 points spaced by 4 hours and 1-deg geographical resolution, updated every 6 hours (best forecast depth) (00, 06, 12, 18UTC)
 Forecast, GFS: 81 points spaced by 3 hours and 0.25-deg geographical resolution, updated every 6 hours (good balance)
 Forecast, RAP: 18 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
-Forecast, NAM: 21 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
+Forecast, NAM: 28 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution) (https://www.ncei.noaa.gov/products/weather-climate-models/north-american-mesoscale)
+NOTE: RocketPy does not appear to be in agreement with NAM source (w.r.t forecast depth)
 '''
 hours_until_launch = (launch_site.local_date - datetime.datetime.now(est_timezone)).total_seconds()/3600 # number of hours until the launch time
 if (hours_until_launch < 18): # launch time is less than 18 hours in the future (https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ncdc:C00689)
     launch_site.set_atmospheric_model(type="Forecast", file="RAP")
-elif (hours_until_launch < 63): # launch time is less than 2.625 days in the future
+elif (hours_until_launch < 51): # launch time is less than 2.625 days in the future
     launch_site.set_atmospheric_model(type="Forecast", file="NAM")
 elif (hours_until_launch < 243): # launch time is less than 10.125 days in the future
     launch_site.set_atmospheric_model(type="Forecast", file="GFS")

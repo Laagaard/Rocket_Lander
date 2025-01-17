@@ -12,7 +12,7 @@ import pandas as pd
 from rocketpy import Flight
 from scipy.spatial import ConvexHull
 import shutil
-from setup import DART_rocket, launch_site, remove_readonly, results_dir
+from setup import automation_flag, DART_rocket, launch_site, remove_readonly, results_dir
 
 date_format_string = "%Y-%m-%d-%H-%M-%S"
 date_dir = f"{results_dir}/{launch_site.local_date.strftime(date_format_string)}"
@@ -86,47 +86,50 @@ if __name__ == "__main__":
     launch_heading = 0 # [deg]
     inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a random plotting color
 
-    # try:
-    while (not success_bool):
-        test_flight = Flight(
-            rocket=DART_rocket,
-            environment=launch_site,
-            rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
-            inclination=launch_inclination, # [deg] rail inclination relative to the ground
-            heading=launch_heading, # [deg] heading angle relative to North (East = 90)
-            time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
-        ) # run trajectory simulation
+    try:
+        while (not success_bool):
+            test_flight = Flight(
+                rocket=DART_rocket,
+                environment=launch_site,
+                rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
+                inclination=launch_inclination, # [deg] rail inclination relative to the ground
+                heading=launch_heading, # [deg] heading angle relative to North (East = 90)
+                time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
+            ) # run trajectory simulation
 
-        solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
+            solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
-        impact_longitude = test_flight.longitude(solution_time)[-1] # [deg] longitude of impact location
-        impact_latitude = test_flight.latitude(solution_time)[-1] # [deg] latitude of impact location
+            impact_longitude = test_flight.longitude(solution_time)[-1] # [deg] longitude of impact location
+            impact_latitude = test_flight.latitude(solution_time)[-1] # [deg] latitude of impact location
 
-        trajectory_information = [test_flight.inclination, test_flight.heading, impact_longitude, impact_latitude]
-        trajectory_dataset_writer.writerow(trajectory_information) # write trajectory information to output CSV file
+            trajectory_information = [test_flight.inclination, test_flight.heading, impact_longitude, impact_latitude]
+            trajectory_dataset_writer.writerow(trajectory_information) # write trajectory information to output CSV file
 
-        print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
+            if (not bool(automation_flag)): # if the script is being run manually (i.e., not by an automatic runner)
+                print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
 
-        if (launch_heading < 360): # launch heading can be increased more
-            launch_heading += 5 # [deg] increase launch heading
-            impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest impact longitude to list of tracked longitudes
-            impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time[-1])])) # [m] add newest impact latitude to list of tracked latitudes
-        else: # launch heading has reached maximum (practical) value (i.e., 360 deg)
-            launch_heading = 0 # [deg] reset launch heading
-            launch_inclination -= 1 # [deg] decrease launch inclination
+            if (launch_heading < 360): # launch heading can be increased more
+                launch_heading += 5 # [deg] increase launch heading
+                impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest impact longitude to list of tracked longitudes
+                impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time[-1])])) # [m] add newest impact latitude to list of tracked latitudes
+            else: # launch heading has reached maximum (practical) value (i.e., 360 deg)
+                launch_heading = 0 # [deg] reset launch heading
+                launch_inclination -= 1 # [deg] decrease launch inclination
 
-            impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest x-impact coordinate to list of tracked coordinates
-            impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time)[-1]])) # [m] add newest y-impact coordinate to list of tracked coordinates
-            impact_coords = np.concatenate((impact_longs.reshape(len(impact_longs), 1), impact_lats.reshape(len(impact_lats), 1)), axis=1)
-            hull = ConvexHull(points=impact_coords) # fit convex hull to all impact locations
-            hull_path = Path(vertices=impact_coords[hull.vertices], closed=True) # create a Path with the hull vertices, only works for 2D points
-            hull_path_patch = PathPatch(path=hull_path, edgecolor=inclination_color, facecolor="None") # create a Patch of the path (for plotting)
-            launch_area_ax.add_patch(hull_path_patch) # for some reason, this has to be here for the following if statement to work properly
-            for perimeter_coords in all_landing_zone_perimeters:
-                if (all(hull_path.contains_points(points=perimeter_coords))): # check if the path encompasses an entire landing zone
-                    success_bool = True # the path encompasses an entire landing zone
-                    break
-            inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
+                impact_longs = np.append(impact_longs, np.array([test_flight.longitude(solution_time)[-1]])) # [m] add newest x-impact coordinate to list of tracked coordinates
+                impact_lats = np.append(impact_lats, np.array([test_flight.latitude(solution_time)[-1]])) # [m] add newest y-impact coordinate to list of tracked coordinates
+                impact_coords = np.concatenate((impact_longs.reshape(len(impact_longs), 1), impact_lats.reshape(len(impact_lats), 1)), axis=1)
+                hull = ConvexHull(points=impact_coords) # fit convex hull to all impact locations
+                hull_path = Path(vertices=impact_coords[hull.vertices], closed=True) # create a Path with the hull vertices, only works for 2D points
+                hull_path_patch = PathPatch(path=hull_path, edgecolor=inclination_color, facecolor="None") # create a Patch of the path (for plotting)
+                launch_area_ax.add_patch(hull_path_patch) # for some reason, this has to be here for the following if statement to work properly
+                for perimeter_coords in all_landing_zone_perimeters:
+                    if (all(hull_path.contains_points(points=perimeter_coords))): # check if the path encompasses an entire landing zone
+                        success_bool = True # the path encompasses an entire landing zone
+                        break
+                inclination_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
+    except (IndexError, ValueError): # Error occurs when the inclination goes too low for RocketPy to handle
+        print("Inclination Too Low - Stopping Search")
 
     # Close trajectory dataset output file
     trajectory_dataset_output_file.close()
@@ -138,12 +141,14 @@ if __name__ == "__main__":
 
     # Record Latitude and Longitude of Optimal Landing Zone Center
     if (success_bool):
-        print("Houston, we have an INTERPOLATION problem")
+        if (not bool(automation_flag)):
+            print("Houston, we have an INTERPOLATION problem")
         optimal_index = np.where(np.any(all_landing_zone_perimeters == perimeter_coords, axis=(1,2)))[0][0]
         optimal_landing_zone_information = [optimal_index, gdf_landing_zone_centers["longitude"][optimal_index], gdf_landing_zone_centers["latitude"][optimal_index]]
         optimal_landing_zone_writer.writerow(optimal_landing_zone_information)
     else:
-        print("Houston, we have an EXTRAPOLATION problem")
+        if (not bool(automation_flag)):
+            print("Houston, we have an EXTRAPOLATION problem")
         optimal_landing_zone_writer.writerow(["None", "None"])
     optimal_landing_zone_output_file.close()
 
