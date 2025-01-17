@@ -52,15 +52,17 @@ launch_site = Environment(
 -------------------- Add Forecast (i.e., Wind) Information --------------------
 Ensemble, GEFS: 65 points spaced by 4 hours and 1-deg geographical resolution, updated every 6 hours (best forecast depth) (00, 06, 12, 18UTC)
 Forecast, GFS: 81 points spaced by 3 hours and 0.25-deg geographical resolution, updated every 6 hours (good balance)
-Forecast, RAP: 40 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
+Forecast, RAP: 18 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
 Forecast, NAM: 21 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution)
 '''
 hours_until_launch = (launch_site.local_date - datetime.datetime.now(est_timezone)).total_seconds()/3600 # number of hours until the launch time
-if (hours_until_launch < 40): # launch time is less than ~1.67 days in the future
+if (hours_until_launch < 18): # launch time is less than 18 hours in the future (https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ncdc:C00689)
     launch_site.set_atmospheric_model(type="Forecast", file="RAP")
-elif (hours_until_launch < 81*3): # launch time is less than 10.125 days in the future
+elif (hours_until_launch < 63): # launch time is less than 2.625 days in the future
+    launch_site.set_atmospheric_model(type="Forecast", file="NAM")
+elif (hours_until_launch < 243): # launch time is less than 10.125 days in the future
     launch_site.set_atmospheric_model(type="Forecast", file="GFS")
-elif (hours_until_launch < 65*4): # launch time is less than 16.25 days in the future
+elif (hours_until_launch < 260): # launch time is less than 16.25 days in the future
     launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
 
 # Run if the script is executed directly (i.e., not as a module)
