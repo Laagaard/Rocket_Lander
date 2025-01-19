@@ -17,9 +17,10 @@ from setup import automation_flag, DART_rocket, launch_site, remove_readonly, re
 date_format_string_date_only = "%Y-%m-%d"
 date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
 date_dir_date_only = f"{results_dir}/{date_string_date_only}"
-date_format_string_time_only = "%Y-%m-%d-%H-%M-%S"
+date_format_string_time_only = "%H-%M-%S"
 date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
 date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
+date_string_with_time = f"{date_string_date_only}-{date_string_time_only}"
 
 figures_output_dir = f"{date_dir_with_time}/figures" # output directory for matplotlib figures
 
