@@ -88,7 +88,7 @@ CG_position_dry=0.07309 # [m] positiion of motor CG without propellant (relative
 
 # Construct AeroTechG25W Solid Rocket Motor
 AeroTechG25W = SolidMotor(
-    thrust_source="../../../../AeroTechG25W_thrustcurve.csv", # [s, N]
+    thrust_source="../../../AeroTechG25W_thrustcurve.csv", # [s, N]
     dry_mass=101.72/1000, # [kg]
     dry_inertia=(235307.21*(1000**(-3)), 235307.21*(1000**(-3)), 13414.14*(1000**(-3))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
     nozzle_radius=7.70/2/1000, # [m] nozzle exit radius
