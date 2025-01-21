@@ -75,6 +75,13 @@ if __name__ == "__main__":
     # Print information of launch site conditions
     launch_site_prints = prints.environment_prints._EnvironmentPrints(launch_site)
     launch_site_prints.all()
+    # Set Path to the Thrust Curve Source
+    thrust_source_path = "../../../AeroTechG25W_thrustcurve.csv"
+    # Set Path to the Fin Airfoil Geometry Source
+    fin_airfoil_source_path = "NACA0012.csv"
+else:
+    thrust_source_path = "../../../../AeroTechG25W_thrustcurve.csv" # TBR, not a robust solution (only works from a directory one level higher)
+    fin_airfoil_source_path = "../NACA0012.csv" # same TBR as above
 
 # AeroTech-G25W Motor Characteristics
 propellant_length=0.09235 # [m] length of propellant grain
@@ -88,7 +95,7 @@ CG_position_dry=0.07309 # [m] positiion of motor CG without propellant (relative
 
 # Construct AeroTechG25W Solid Rocket Motor
 AeroTechG25W = SolidMotor(
-    thrust_source="../../../AeroTechG25W_thrustcurve.csv", # [s, N]
+    thrust_source=thrust_source_path, # [s, N]
     dry_mass=101.72/1000, # [kg]
     dry_inertia=(235307.21*(1000**(-3)), 235307.21*(1000**(-3)), 13414.14*(1000**(-3))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
     nozzle_radius=7.70/2/1000, # [m] nozzle exit radius
@@ -160,7 +167,7 @@ DART_fins = DART_rocket.add_trapezoidal_fins(
     span=0.08636, # [m]
     position=-0.244369, # [m]
     cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-    airfoil=("NACA0012.csv", "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
+    airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
 
 launch_rail_length = 1.8034 # [m] 71-inch rail (NEEDS TO BE REFINED TO ONLY THE LENGTH IN WHICH THE ROCKET WILL BE ATTACHED TO THE RAIL)

@@ -2,7 +2,6 @@
 import contextily as cx
 import csv
 import geopandas as gpd
-import math
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
@@ -12,6 +11,8 @@ import pandas as pd
 from rocketpy import Flight
 from scipy.spatial import ConvexHull
 import shutil
+import sys
+sys.path.append("../") # Tell Python where to look for the `setup.py` file
 from setup import automation_flag, DART_rocket, launch_site, remove_readonly, results_dir
 
 date_format_string_date_only = "%Y-%m-%d"

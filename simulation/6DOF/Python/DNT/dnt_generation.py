@@ -8,8 +8,10 @@ import os
 import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
+import sys
 from dataset_generation import date_dir_with_time, figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
+sys.path.append("../")
 from setup import automation_flag, launch_site_longitude, launch_site_latitude
 
 dnt_temporal_resolution = 0.25 # [s] time-step of each DNT discretization
