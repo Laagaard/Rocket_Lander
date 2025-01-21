@@ -19,5 +19,5 @@ jobs:
                 pip install -r requirements.txt
             - name: Run DNT automation script
               run: |
-                cd .\simulation\6DOF\Python\
+                cd .\simulation\6DOF\Python\DNT\
                 .\generate_dnts.bat
