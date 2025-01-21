@@ -68,8 +68,10 @@ if __name__ == "__main__":
     trajectory_state_history_file.close()
 
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
-    launch_area_ax.set_title(f"Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
-    launch_area_ax.legend(loc="best")
+    launch_area_ax.set_title(f"Optimal Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
+    plt.tight_layout()
     print(f"{date_string_with_time}, Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg, LZ: {landing_zone_number}, Impact Angle: {np.round(final_angle, 2)} deg")
-    plt.savefig(f"{figures_output_dir}/optimal_trajectory.png")
-    plt.show()
+    plt.savefig(f"{figures_output_dir}/optimal_trajectory.png", transparent=True, dpi=1000) # save the figure with a transparent background
+
+    if (not bool(automation_flag)): # if the script is being run manually
+        plt.show()

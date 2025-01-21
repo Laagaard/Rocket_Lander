@@ -74,11 +74,11 @@ if __name__ == "__main__":
             writer.writerow(time_step_data)
         output_file.close()
 
-    launch_area_ax.legend(loc="best")
-    plt.savefig(f"{figures_output_dir}/dnt_trajectories.png")
-    plt.show()
+    plt.tight_layout()
+    plt.savefig(f"{figures_output_dir}/dnt_trajectories.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
     if (not bool(automation_flag)):
+        plt.show()
         print(f"\n---------- SIMULATION RESULTS ----------")
         print(f"Trajectories Attempted: {number_of_perimeter_points}")
         print(f"Trajectories Used: {iteration_counter}\n")

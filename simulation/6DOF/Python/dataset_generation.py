@@ -61,7 +61,7 @@ total_gdf = pd.concat([gdf_launch_site, gdf_landing_zone_centers, gdf_landing_zo
 
 # Figure of Launch Site and Landing Zones Overlaid on Satellite Image Base Layer
 launch_area_ax = total_gdf.plot(column="color", facecolor="none", markersize=4)
-cx.add_basemap(ax=launch_area_ax, source="Esri.WorldImagery", crs=total_gdf.crs.to_string())
+cx.add_basemap(ax=launch_area_ax, source="Esri.WorldImagery", crs=total_gdf.crs.to_string(), attribution_size=2)
 launch_area_ax.set_xlabel("Longitude [deg]")
 launch_area_ax.tick_params(axis='x', labelrotation=45)
 launch_area_ax.set_ylabel("Latitude [deg]")
@@ -150,17 +150,20 @@ if __name__ == "__main__":
 
     # Record Latitude and Longitude of Optimal Landing Zone Center
     if (success_bool):
-        if (not bool(automation_flag)):
+        if (not bool(automation_flag)): # if the script is being run manually
             print("Houston, we have an INTERPOLATION problem")
         optimal_index = np.where(np.any(all_landing_zone_perimeters == perimeter_coords, axis=(1,2)))[0][0]
         optimal_landing_zone_information = [optimal_index, gdf_landing_zone_centers["longitude"][optimal_index], gdf_landing_zone_centers["latitude"][optimal_index]]
         optimal_landing_zone_writer.writerow(optimal_landing_zone_information)
     else:
-        if (not bool(automation_flag)):
+        if (not bool(automation_flag)): # if the script is being run manually
             print("Houston, we have an EXTRAPOLATION problem")
         optimal_landing_zone_writer.writerow(["None", "None"])
     optimal_landing_zone_output_file.close()
 
     launch_area_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
-    plt.savefig(f"{figures_output_dir}/impact_area.png") # save the figure
-    plt.show() # show the graph
+    plt.tight_layout()
+    plt.savefig(f"{figures_output_dir}/impact_area.png", transparent=True, dpi=1000) # save the figure with a transparent background
+
+    if (not bool(automation_flag)): # if the script is being run manually
+        plt.show() # show the graph

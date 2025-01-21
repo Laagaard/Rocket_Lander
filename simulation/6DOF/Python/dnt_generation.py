@@ -149,6 +149,8 @@ output_file.close() # close the file
 
 launch_area_ax.plot(dnt_left_boundary_xs, dnt_left_boundary_ys, 'b.-')
 launch_area_ax.plot(dnt_right_boundary_xs, dnt_right_boundary_ys, 'g.-')
-launch_area_ax.legend(loc="best")
-plt.savefig(f"{figures_output_dir}/DNT.png")
-plt.show()
+plt.tight_layout()
+plt.savefig(f"{figures_output_dir}/DNT.png", transparent=True, dpi=1000) # save the figure with a transparent background
+
+if (not bool(automation_flag)): # if the script is being run manually
+    plt.show()

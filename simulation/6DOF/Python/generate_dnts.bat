@@ -1,6 +1,6 @@
 @echo off
 set dates_list=1-25-2025
-set hours_list=07 08 09 &:: 10 11 12 13 14 15 16 17 18
+set hours_list=07 &:: 10 11 12 13 14 15 16 17 18
 set minutes_list=00
 (for %%a in (%dates_list%) do (
     (for %%b in (%hours_list%) do (
