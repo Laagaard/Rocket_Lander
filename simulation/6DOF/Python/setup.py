@@ -1,6 +1,7 @@
 # Libraries
 import datetime
 import math
+import numpy as np
 import os
 from rocketpy import Environment, SolidMotor, Rocket, prints
 import stat
@@ -53,21 +54,31 @@ launch_site = Environment(
 
 '''
 -------------------- Add Forecast (i.e., Wind) Information --------------------
-Ensemble, GEFS: 65 points spaced by 4 hours and 1-deg geographical resolution, updated every 6 hours (best forecast depth) (00, 06, 12, 18UTC)
-Forecast, GFS: 81 points spaced by 3 hours and 0.25-deg geographical resolution, updated every 6 hours (good balance)
-Forecast, RAP: 18 points spaced hourly and 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
-Forecast, NAM: 28 points spaced by 3 hours and ~0.045-deg geographical resolution, updated every 6 hours (best geographical resolution) (https://www.ncei.noaa.gov/products/weather-climate-models/north-american-mesoscale)
-NOTE: RocketPy does not appear to be in agreement with NAM source (w.r.t forecast depth)
+Ensemble, GEFS: 1-deg geographical resolution, updated every 6 hours (00, 06, 12, 18UTC) (experimentally determined to have the same forecast depth as GFS)
+Forecast, GFS: 0.25-deg geographical resolution, updated every 6 hours (good balance)
+Forecast, RAP: 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
+Forecast, NAM: ~0.045-deg geographical resolution, updated every 6 hours with points spaced every 3 hours (best geographical resolution) (https://www.ncei.noaa.gov/products/weather-climate-models/north-american-mesoscale)
 '''
-hours_until_launch = (launch_site.local_date - datetime.datetime.now(est_timezone)).total_seconds()/3600 # number of hours until the launch time
-if (hours_until_launch < 18): # launch time is less than 18 hours in the future (https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ncdc:C00689)
-    launch_site.set_atmospheric_model(type="Forecast", file="RAP")
-elif (hours_until_launch < 51): # launch time is less than 2.625 days in the future
+time_now = datetime.datetime.now(datetime.timezone.utc) # current UTC time
+update_times = [00, 6, 12, 18] # UTC times that the NAM, GFS, and GEFS forecasts/ensembles update
+most_recent_update_hour_checks = np.array([time_now.hour - test_time for test_time in update_times]) # array of differences between current UTC time and forecast update times
+most_recent_update_hour_idx = np.argmin(most_recent_update_hour_checks[most_recent_update_hour_checks >= 0]) # index of the last UTC forecast update time
+most_recent_update_hour = update_times[most_recent_update_hour_idx] # hour of the last UTC forecast update time
+most_recent_update_time = datetime.time(hour=most_recent_update_hour, minute=00) # # UTC time of most recent forecast update (NAM, GFS, GEFS)
+most_recent_update_date = datetime.datetime.today() # datetime object of current day
+most_recent_update_datetime = datetime.datetime.combine(date=most_recent_update_date, time=most_recent_update_time) # datetime object combining current date and most recent UTC forecast update time
+
+hours_btw_launch_and_current_time = (launch_site.datetime_date - time_now).total_seconds()/3600 # number of hours between the launch time and the current time
+hours_btw_launch_and_forecast_update = (launch_site.datetime_date.replace(tzinfo=None) - most_recent_update_datetime).total_seconds()/3600 # number of hours between the launch time and the last forecast update time (NAM, GFS, GEFS)
+if (hours_btw_launch_and_current_time < 20): # launch time is less than 20 hours in the future (forecast depth determined experimentally)
+    launch_site.set_atmospheric_model(type="Forecast", file="RAP") # RAP updates hourly
+    print("RAP")
+elif (hours_btw_launch_and_forecast_update < 54): # launch time is less than 2.25 days in the future (forecast depth determined experimentally)
     launch_site.set_atmospheric_model(type="Forecast", file="NAM")
-elif (hours_until_launch < 243): # launch time is less than 10.125 days in the future
+    print("NAM")
+elif (hours_btw_launch_and_forecast_update < 378): # launch time is less than 15.75 days in the future (forecast depth determined experimentally)
+    print("GFS")
     launch_site.set_atmospheric_model(type="Forecast", file="GFS")
-elif (hours_until_launch < 260): # launch time is less than 16.25 days in the future
-    launch_site.set_atmospheric_model(type="Ensemble", file="GEFS")
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
