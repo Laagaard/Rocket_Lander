@@ -22,8 +22,7 @@ else:
 if (len(sys.argv) != 1): # sys.argv[0] is the program name
     launch_date = datetime.datetime.strptime(sys.argv[1], "%m-%d-%Y") # launch date
     launch_hour = int(sys.argv[2])
-    launch_minute = int(sys.argv[3])
-    launch_time = datetime.time(hour=launch_hour, minute=launch_minute) # # launch time (hr, min) (input as EST)
+    launch_time = datetime.time(hour=launch_hour, minute=00) # # launch time (hr, min) (input as EST)
     launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
     if (len(sys.argv) > 4):
         automation_flag = int(sys.argv[4]) # flag to signal the program is being executed by an automatic runner

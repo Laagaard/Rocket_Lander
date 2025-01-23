@@ -15,10 +15,10 @@ import sys
 sys.path.append("../") # Tell Python where to look for the `setup.py` file
 from setup import automation_flag, DART_rocket, launch_site, remove_readonly, results_dir
 
-date_format_string_date_only = "%Y-%m-%d"
+date_format_string_date_only = "%m-%d-%Y"
 date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
 date_dir_date_only = f"{results_dir}/{date_string_date_only}"
-date_format_string_time_only = "%H-%M-%S"
+date_format_string_time_only = "%H"
 date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
 date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
 date_string_with_time = f"{date_string_date_only}-{date_string_time_only}"
