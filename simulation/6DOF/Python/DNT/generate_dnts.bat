@@ -1,5 +1,5 @@
 @echo off
-set dates_list=1-25-2025
+set dates_list=02-01-2025
 set hours_list=07
 set minutes_list=00
 (for %%a in (%dates_list%) do (
