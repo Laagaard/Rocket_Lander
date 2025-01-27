@@ -18,7 +18,7 @@ number_of_perimeter_points = max(optimal_perimeter_coords.shape) # number of poi
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     from optimal_trajectory import trajectory_state_history_header, inclination_interpolator, heading_interpolator
-    from setup import automation_flag, launch_site, DART_rocket, remove_readonly
+    from setup import automation_flag, launch_rail_length, launch_site, DART_rocket, remove_readonly
 
     if os.path.exists(CSV_output_dir):
         shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
             test_flight = Flight(
                 rocket=DART_rocket,
                 environment=launch_site,
-                rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
+                rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
                 inclination=launch_inclination, # [deg] rail inclination relative to the ground
                 heading=launch_heading, # [deg] heading angle relative to North (East = 90)
                 time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate

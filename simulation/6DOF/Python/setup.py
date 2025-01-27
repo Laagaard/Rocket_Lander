@@ -180,8 +180,6 @@ DART_fins = DART_rocket.add_trapezoidal_fins(
     airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
 
-launch_rail_length = 1.8034 # [m] 71-inch rail (NEEDS TO BE REFINED TO ONLY THE LENGTH IN WHICH THE ROCKET WILL BE ATTACHED TO THE RAIL)
-
 # Parachute Characteristics
 C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
@@ -195,3 +193,21 @@ parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of para
 #     lag=0, # [s] time between the ejection system is triggers and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
 #     noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
 # )
+
+'''
+Effective Launch Rail Length: length in which the rocket will be attached to the rail, only moving along a fixed direction (the line parallel to the rail)
+Source: (https://docs.rocketpy.org/en/latest/reference/classes/Flight.html#rocketpy.Flight.__init__)
+
+Measurements:
+- Total Rail Length: 71 [in]
+- Rail Length above Launch Stand: 63.25 [in]
+- Distance between Launch Stand Pad and L-Bracket Hardstop: 2.125 [in]
+- Lower Rail Button to Bottom of Ascent Motor Mount: 8.14 [in]
+- Lower Rail Button to Bottom of Ascent Motor Mount Aft Closure: 8.58 [in]
+- Upper Rail Button to Bottom of Ascent Motor Mount Aft Closure: 16.58 [in]
+
+Final (Calculated) Length Options:
+- Distance between the Top Rail Button and the Top of the Rail: 1.131 [m], 44.545 [in] (accounting for L-bracket hardstop)
+- Distance between the Lower Rail Button and the Top of the Rail: 1.335 [m], 52.545 [in] (accounting for L-bracket hardstop)
+'''
+launch_rail_length = 1.131 # [m]
