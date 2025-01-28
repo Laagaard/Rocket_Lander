@@ -26,7 +26,7 @@ trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     from dataset_generation import figures_output_dir, launch_area_ax
-    from setup import automation_flag, DART_rocket, launch_site
+    from setup import automation_flag, DART_rocket_1, launch_site
 
     if (not bool(automation_flag)):
         print("\n---------- LAUNCH PARAMETERS ----------")
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # Simulate the Flight with Optimal Launch Parameters
     test_flight = Flight(
-        rocket=DART_rocket,
+        rocket=DART_rocket_1,
         environment=launch_site,
         rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
         inclination=optimal_inclination, # [deg] rail inclination relative to the ground

@@ -1,8 +1,9 @@
 # Libraries
+import copy
 import datetime
 import math
 import os
-from rocketpy import Environment, SolidMotor, Rocket, prints
+from rocketpy import Environment, SolidMotor, Rocket, prints, Flight
 import stat
 import sys
 
@@ -119,7 +120,7 @@ total_mass = 1434.96/1000 # [kg] maximum allowable rocket mass per 14 CFR Part 1
 motor_mass = AeroTechG25W.propellant_initial_mass + AeroTechG25W.dry_mass # [kg] total mass of ONE motor
 
 # Construct Rocket
-DART_rocket = Rocket(
+DART_rocket_1 = Rocket(
     radius=(3.28/2*25.4)/1000, # [m] largest outer radius
     mass=total_mass - motor_mass, # [kg] dry mass of the rocket
     inertia=(46065894.35*(1000**(-3)), 46057059.28*(1000**(-3)), 1796848.98*(1000**(-3)), 4106.46*(1000**(-3)), 53311.54*(1000**(-3)), 60557.58*(1000**(-3))), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
@@ -133,14 +134,14 @@ DART_rocket = Rocket(
 -------------------- Add Ascent Motor --------------------
 postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 '''
-DART_rocket.add_motor(AeroTechG25W, position=-0.370869)
+DART_rocket_1.add_motor(AeroTechG25W, position=-0.370869)
 
 '''
 -------------------- Add Rail Buttons --------------------
 upper_button_position: Position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: Position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rail_buttons = DART_rocket.set_rail_buttons(
+DART_rail_buttons = DART_rocket_1.set_rail_buttons(
     upper_button_position=-0.1,
     lower_button_position=-0.3
 ) # [ARBITRARILY CHOSEN AND NEEDS TO BE UPDATED] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -151,7 +152,7 @@ length: [m] length of the nose cone (excluding the shoulder)
 kind: One of {Von Karman, conical, ogive, lvhaack, powerseries}
 position: [m] Nose cone tip coordinate relative to the rocket's coordinate system
 '''
-DART_nose = DART_rocket.add_nose(
+DART_nose = DART_rocket_1.add_nose(
     length=0.145836,
     kind="ogive",
     position=0.389190,
@@ -159,7 +160,7 @@ DART_nose = DART_rocket.add_nose(
 )
 
 # Construct Fins
-DART_fins = DART_rocket.add_trapezoidal_fins(
+DART_fins = DART_rocket_1.add_trapezoidal_fins(
     n=3, # [unitless] number of fins
     root_chord=0.125223, # [m]
     tip_chord=0.062611, # [m]
@@ -169,6 +170,21 @@ DART_fins = DART_rocket.add_trapezoidal_fins(
     airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
 
+DART_rocket_2 = copy.deepcopy(DART_rocket_1) # create `Rocket` object for powered descent phase with legs STOWED
+DART_rocket_3 = copy.deepcopy(DART_rocket_1) # create `Rocket` object for powered descent phase with legs DEPLOYED
+# TBR, need to adjust mass, inertia, and aerodynamics of new rockets
+
+test_flight = Flight(
+    rocket=DART_rocket_3,
+    environment=launch_site,
+    rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
+    inclination=90, # [deg] rail inclination relative to the ground
+    heading=0, # [deg] heading angle relative to North (East = 90)
+    time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
+) # run trajectory simulation
+
+test_flight.plots.trajectory_3d()
+
 launch_rail_length = 1.8034 # [m] 71-inch rail (NEEDS TO BE REFINED TO ONLY THE LENGTH IN WHICH THE ROCKET WILL BE ATTACHED TO THE RAIL)
 
 # Parachute Characteristics
@@ -176,7 +192,7 @@ C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
 
 # Construct Parachute
-# main = DART_rocket.add_parachute(
+# main = DART_rocket_1.add_parachute(
 #     name="main", # name of the parachute (no impact on simulation)
 #     cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
 #     trigger="apogee", # will trigger the parachute deployment at apogee (can also use a callable function based on fresstream pressure, altitude, and state vector)

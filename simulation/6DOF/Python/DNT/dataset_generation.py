@@ -13,7 +13,7 @@ from scipy.spatial import ConvexHull
 import shutil
 import sys
 sys.path.append("../") # Tell Python where to look for the `setup.py` file
-from setup import automation_flag, DART_rocket, launch_site, remove_readonly, results_dir
+from setup import automation_flag, DART_rocket_1, launch_site, remove_readonly, results_dir
 
 date_format_string_date_only = "%m-%d-%Y"
 date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     try:
         while (not success_bool):
             test_flight = Flight(
-                rocket=DART_rocket,
+                rocket=DART_rocket_1,
                 environment=launch_site,
                 rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
                 inclination=launch_inclination, # [deg] rail inclination relative to the ground

@@ -1,5 +1,6 @@
 # List of Required Python Libraries
 contextily
+copy
 datetime
 geopandas
 matplotlib
