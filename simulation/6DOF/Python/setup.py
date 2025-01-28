@@ -3,7 +3,7 @@ import copy
 import datetime
 import math
 import os
-from rocketpy import Environment, SolidMotor, Rocket, prints, Flight
+from rocketpy import Environment, SolidMotor, Rocket, prints
 import stat
 import sys
 
@@ -173,17 +173,6 @@ DART_fins = DART_rocket_1.add_trapezoidal_fins(
 DART_rocket_2 = copy.deepcopy(DART_rocket_1) # create `Rocket` object for powered descent phase with legs STOWED
 DART_rocket_3 = copy.deepcopy(DART_rocket_1) # create `Rocket` object for powered descent phase with legs DEPLOYED
 # TBR, need to adjust mass, inertia, and aerodynamics of new rockets
-
-test_flight = Flight(
-    rocket=DART_rocket_3,
-    environment=launch_site,
-    rail_length=1.5, # [m] length in which the rocket will be attached to the launch rail
-    inclination=90, # [deg] rail inclination relative to the ground
-    heading=0, # [deg] heading angle relative to North (East = 90)
-    time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
-) # run trajectory simulation
-
-test_flight.plots.trajectory_3d()
 
 launch_rail_length = 1.8034 # [m] 71-inch rail (NEEDS TO BE REFINED TO ONLY THE LENGTH IN WHICH THE ROCKET WILL BE ATTACHED TO THE RAIL)
 
