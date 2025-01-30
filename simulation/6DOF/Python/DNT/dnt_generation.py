@@ -14,7 +14,7 @@ from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 sys.path.append("../")
 from setup import automation_flag, launch_site_longitude, launch_site_latitude
 
-dnt_temporal_resolution = 0.25 # [s] time-step of each DNT discretization
+dnt_temporal_resolution = 0.1 # [s] time-step of each DNT discretization
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization
 dnt_left_boundary_xs = [launch_site_longitude] # [m] x-coordinates comprising the left boundary of the DNT
 dnt_left_boundary_ys = [launch_site_latitude] # [m] y-coordinates comprising the left boundary of the DNT
@@ -130,27 +130,53 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
         time_vector.append(timestep_current_lower_bound) # append current lower time bound to the time array
         timestep_current_lower_bound += dnt_temporal_resolution # increment current time step
 
-output_file = open(f"{date_dir_with_time}/DNT.csv", 'w', newline="") # output CSV file containing DNT information
-writer = csv.writer(output_file) # CSV writer for output file containing DNT information
-writer.writerow(["#","t_i","t_f","m_1","b_1","m_2","b_2","h_high","h_low"]) # write header row of output CSV file containing DNT information
+dnt_output_file = open(f"{date_dir_with_time}/DNT.csv", 'w', newline="") # output CSV file containing DNT information
+dnt_output_writer = csv.writer(dnt_output_file) # CSV writer for output file containing DNT information
+dnt_output_writer.writerow(["#","t_i","t_f","m_1","b_1","m_2","b_2","h_high","h_low"]) # write header row of output CSV file containing DNT information
 
 # Loop to Output the DNT Information CSV
 for idx in range(len(dnt_left_boundary_xs) - 1): # for each point along the left edge of the DNT
     discretization_number = idx + 1 # count of the discretization
     t_i = time_vector[idx] # lower time bound to which this discretization applies
     t_f = time_vector[idx + 1] # upper time bound to which this discretization applies
-    m_1 = (dnt_left_boundary_ys[idx + 1] - dnt_left_boundary_ys[idx])/(dnt_left_boundary_xs[idx + 1] - dnt_left_boundary_xs[idx]) # slope of the line bounding the left edge of the DNT for this discretization ("left" defined as the launch operator standing at the inertial origin and looking downrange)
-    b_1 = dnt_left_boundary_ys[idx] - m_1*dnt_left_boundary_xs[idx] # y-intercept of the line bounding the left edge of the DNT for this discretization
-    m_2 = (dnt_right_boundary_ys[idx + 1] - dnt_right_boundary_ys[idx])/(dnt_right_boundary_xs[idx + 1] - dnt_right_boundary_xs[idx]) # slope of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left" previously)
-    b_2 = dnt_left_boundary_ys[idx] - m_2*dnt_left_boundary_xs[idx] # y-intercept of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left" 
+
+    left_x_1 = dnt_left_boundary_xs[idx] # x-coordinate of current left boundary point
+    left_y_1 = dnt_left_boundary_ys[idx] # y-coordinate of current left boundary point
+    left_x_2 = dnt_left_boundary_xs[idx + 1] # x-coordinate of next left boundary point
+    left_y_2 = dnt_left_boundary_ys[idx + 1] # y-coordinate of next left boundary point
+
+    right_x_1 = dnt_right_boundary_xs[idx] # x-coordinate of current right boundary point
+    right_y_1 = dnt_right_boundary_ys[idx] # y-coordinate of current right boundary point
+    right_x_2 = dnt_right_boundary_xs[idx + 1] # x-coordinate of next right boundary point
+    right_y_2 = dnt_right_boundary_ys[idx + 1] # y-coordinate of next right boundary point
+
+    m_1 = (left_y_2 - left_y_1)/(left_x_2 - left_x_1) # slope of the line bounding the left edge of the DNT for this discretization ("left" defined as the launch operator standing at the inertial origin and looking downrange)
+    b_1 = left_y_1 - m_1*left_x_1 # y-intercept of the line bounding the left edge of the DNT for this discretization
+    m_2 = (right_y_2 - right_y_1)/(right_x_2 - right_x_1) # slope of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left" previously)
+    b_2 = right_y_1 - m_2*right_x_1 # y-intercept of the line bounding the right edge of the DNT for this discretization ("right" defined the same as "left")
     h_high = dnt_upper_altitudes[idx] # upper alitutde limit of the current discretization
     h_low = dnt_lower_altitudes[idx] # lower alitutde limit of the current discretization
-    writer.writerow([discretization_number, round(t_i, 1), round(t_f, 1), round(m_1, 3), round(b_1, 3), round(m_2, 3), round(b_2, 3), round(h_high, 3), round(h_low, 3)]) # write header row of output CSV file containing DNT information
+    dnt_output_writer.writerow([discretization_number, round(t_i, 1), round(t_f, 1), m_1, b_1, m_2, b_2, round(h_high, 5), round(h_low, 5)]) # write header row of output CSV file containing DNT information
 
-output_file.close() # close the file
+    launch_area_ax.plot([left_x_1, left_x_2], [m_1*left_x_1 + b_1, m_1*left_x_2 + b_1], 'b.-') # plot left boundary line segments
+    launch_area_ax.plot([right_x_1, right_x_2], [m_2*right_x_1 + b_2, m_2*right_x_2 + b_2], 'g.-') # plot right boundary line segments
 
-launch_area_ax.plot(dnt_left_boundary_xs, dnt_left_boundary_ys, 'b.-')
-launch_area_ax.plot(dnt_right_boundary_xs, dnt_right_boundary_ys, 'g.-')
+dnt_output_file.close() # close the file
+
+dnt_points_file = open(f"{date_dir_with_time}/DNT_points.csv", 'w', newline="") # output CSV file containing the points forming the DNT boundaries
+dnt_points_writer = csv.writer(dnt_points_file) # CSV writer for output file containing the points of the DNT boundaries
+dnt_points_writer.writerow(["t", "x_1", "y_1", "x_2", "y_2"]) # writer header row of output CSV file containing the points of the DNT boundaries
+
+for idx in range(len(dnt_left_boundary_xs)):
+    t = time_vector[idx]
+    x_1 = dnt_left_boundary_xs[idx]
+    y_1 = dnt_left_boundary_ys[idx]
+    x_2 = dnt_right_boundary_xs[idx]
+    y_2 = dnt_right_boundary_ys[idx]
+    dnt_points_writer.writerow([t, x_1, y_1, x_2, y_2])
+
+dnt_points_file.close() # close the file
+
 plt.tight_layout()
 plt.savefig(f"{figures_output_dir}/DNT.png", transparent=True, dpi=1000) # save the figure with a transparent background
 

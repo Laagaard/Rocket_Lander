@@ -20,7 +20,7 @@ optimal_inclination = inclination_interpolator.__call__(optimal_landing_zone_df[
 heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajectory_dataset_df["Heading"])
 optimal_heading = heading_interpolator.__call__(optimal_landing_zone_df["longitude"][0], optimal_landing_zone_df["latitude"][0]) # [deg] optimal launch heading for optimal landing zone center
 
-launch_information_header = ["DateTime", "Inclincation", "Heading", "Landing Zone", "Impact Angle"] # CSV header for optimal trajectory launch information
+launch_information_header = ["DateTime", "Inclination", "Heading", "Landing Zone", "Impact Angle"] # CSV header for optimal trajectory launch information
 trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "y_vel"] # CSV header for all DNT trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)

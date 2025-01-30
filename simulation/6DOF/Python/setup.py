@@ -1,7 +1,11 @@
 # Libraries
+import contextily as cx
 import datetime
+import geopandas as gpd
 import math
+import numpy as np
 import os
+import pandas as pd
 from rocketpy import Environment, SolidMotor, Rocket, prints
 import stat
 import sys
@@ -201,6 +205,52 @@ parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of para
 #     lag=0, # [s] time between the ejection system is triggers and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
 #     noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
 # )
+
+'''
+Satellite Image for Plotting Launch Site and Landing Zones, Trajectories, etc.
+'''
+landing_zone_radius = 5 # [m] radius of desired landing zone
+
+gdf_launch_site = gpd.GeoDataFrame(data={"longitude": [launch_site.longitude],
+                                         "latitude": [launch_site.latitude],
+                                         "color": "launch_site"},
+                                    geometry=gpd.points_from_xy([launch_site.longitude], [launch_site.latitude]),
+                                    crs="EPSG:4326") # create GeoDataFrame from lat/longs
+
+landing_zone_lats = [27.935514, 27.935504, 27.935499, 27.934703, 27.934706, 27.933877, 27.933002, 27.932312, 27.932334, 27.932334, 27.932334] # [deg] coordinates of landing zone centers (clockwise around launch site)
+landing_zone_longs = [-80.711389, -80.710455, -80.709524, -80.709506, -80.708361, -80.708351, -80.708350, -80.708283, -80.709533, -80.710461, -80.711391] # [deg] coordinates of landing zone centers (clockwise around launch site)
+
+gdf_landing_zone_centers = gpd.GeoDataFrame(data={"longitude": landing_zone_longs,
+                                                  "latitude": landing_zone_lats,
+                                                  "color": "landing_zone"},
+                                            geometry=gpd.points_from_xy(landing_zone_longs, landing_zone_lats),
+                                            crs="EPSG:4326") # create GeoDataFrame from lat/longs
+
+gdf_landing_zone_perimeters = gdf_landing_zone_centers.copy(deep=True)
+gdf_landing_zone_perimeters.crs = "epsg:4326" # establish CRS for GeoDataFrame with landing zone perimeters
+gdf_landing_zone_perimeters = gdf_landing_zone_perimeters.to_crs(crs=3857) # transition GeoDataFrame with landing zone perimeters to projected coordinate system
+gdf_landing_zone_perimeters.geometry = gdf_landing_zone_perimeters.buffer(distance=landing_zone_radius) # apply buffer (radius) to landing zone centers
+gdf_landing_zone_perimeters = gdf_landing_zone_perimeters.to_crs(crs=4326)
+
+landing_zone_perimeters_series = [perimeter for perimeter in gdf_landing_zone_perimeters.geometry]
+
+all_landing_zone_perimeters = [] # list to store lat/long coordinates of landing zone perimeters
+for perimeter in landing_zone_perimeters_series:
+    longitudes = np.reshape(perimeter.boundary.coords.xy[0], (len(perimeter.boundary.coords.xy[0]), 1))
+    latitudes = np.reshape(perimeter.boundary.coords.xy[1], (len(perimeter.boundary.coords.xy[1]), 1))
+    coords = np.concatenate((longitudes, latitudes), axis=1)
+    all_landing_zone_perimeters.append(coords)
+all_landing_zone_perimeters = np.array(all_landing_zone_perimeters)
+
+total_gdf = pd.concat([gdf_launch_site, gdf_landing_zone_centers, gdf_landing_zone_perimeters])
+
+# Figure of Launch Site and Landing Zones Overlaid on Satellite Image Base Layer
+launch_area_ax = total_gdf.plot(column="color", facecolor="none", markersize=4)
+cx.add_basemap(ax=launch_area_ax, source="Esri.WorldImagery", crs=total_gdf.crs.to_string(), attribution_size=2)
+launch_area_ax.set_xlabel("Longitude [deg]")
+launch_area_ax.tick_params(axis='x', labelrotation=45)
+launch_area_ax.set_ylabel("Latitude [deg]")
+launch_area_ax.grid(which="major", axis="both")
 
 '''
 Effective Launch Rail Length: length in which the rocket will be attached to the rail, only moving along a fixed direction (the line parallel to the rail)
