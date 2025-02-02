@@ -36,17 +36,25 @@ launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Ensure ti
 
 '''
 Establish Launch Site Latitude & Longitude
-Source 1: Google Maps
+Source 1: Google Maps (Independent)
 https://www.google.com/maps/@27.933873,-80.7094486,55m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D
 '''
-launch_site_latitude = 27.933880 # [deg] North, launch site latitude
-launch_site_longitude = -80.709505 # [deg] West, launch site longitude
+launch_site_latitude_independent = 27.933880 # [deg] North, launch site latitude (if launching independently (i.e., without a NAR section))
+launch_site_longitude_independent = -80.709505 # [deg] West, launch site longitude (if launching independently (i.e., without a NAR section))
+
+'''
+Establish Launch Site Latitude & Longitude
+Source 1: Google Maps (ROAR, NAR section 795)
+https://www.google.com/maps/@28.5633031,-81.0187189,261m/data=!3m1!1e3?authuser=1&hl=en&entry=ttu&g_ep=EgoyMDI1MDEyOS4xIKXMDSoASAFQAw%3D%3D
+'''
+launch_site_latitude_ROAR = 27.563321 # [deg] North, launch site latitude (if launching with ROAR, NAR section 795))
+launch_site_longitude_ROAR = -81.018022 # [deg] West, launch site longitude (if launching with ROAR, NAR section 795))
 
 # Construct Launch Site Environment
 launch_site = Environment(
     date=launch_date_and_time, # launch date and time
-    latitude=launch_site_latitude, # [deg] positive corresponds to North
-    longitude=launch_site_longitude, # [deg] positive corresponds to East
+    latitude=launch_site_latitude_ROAR, # [deg] positive corresponds to North
+    longitude=launch_site_longitude_ROAR, # [deg] positive corresponds to East
     elevation=4, # [m] launch site elevation above sea level
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
