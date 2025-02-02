@@ -12,14 +12,14 @@ import sys
 from dataset_generation import date_dir_with_time, figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 sys.path.append("../")
-from setup import automation_flag, launch_site_longitude, launch_site_latitude
+from setup import automation_flag, launch_site
 
-dnt_temporal_resolution = 0.1 # [s] time-step of each DNT discretization
+dnt_temporal_resolution = 0.25 # [s] time-step of each DNT discretization, be careful setting too high or too low
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization
-dnt_left_boundary_xs = [launch_site_longitude] # [m] x-coordinates comprising the left boundary of the DNT
-dnt_left_boundary_ys = [launch_site_latitude] # [m] y-coordinates comprising the left boundary of the DNT
-dnt_right_boundary_xs = [launch_site_longitude] # [m] x-coordinates comprising the right boundary of the DNT
-dnt_right_boundary_ys = [launch_site_latitude] # [m] y-coordinates comprising the right boundary of the DNT
+dnt_left_boundary_xs = [launch_site.longitude] # [m] x-coordinates comprising the left boundary of the DNT
+dnt_left_boundary_ys = [launch_site.latitude] # [m] y-coordinates comprising the left boundary of the DNT
+dnt_right_boundary_xs = [launch_site.longitude] # [m] x-coordinates comprising the right boundary of the DNT
+dnt_right_boundary_ys = [launch_site.latitude] # [m] y-coordinates comprising the right boundary of the DNT
 dnt_upper_altitudes = [] # [m] z-coordinate comprising the upper boundary of each DNT discretization
 dnt_lower_altitudes = [] # [m] z-coordinate comprising the lower boundary of each DNT discretization
 time_vector = [0] # [s] time array
@@ -158,9 +158,6 @@ for idx in range(len(dnt_left_boundary_xs) - 1): # for each point along the left
     h_low = dnt_lower_altitudes[idx] # lower alitutde limit of the current discretization
     dnt_output_writer.writerow([discretization_number, round(t_i, 1), round(t_f, 1), m_1, b_1, m_2, b_2, round(h_high, 5), round(h_low, 5)]) # write header row of output CSV file containing DNT information
 
-    launch_area_ax.plot([left_x_1, left_x_2], [m_1*left_x_1 + b_1, m_1*left_x_2 + b_1], 'b.-') # plot left boundary line segments
-    launch_area_ax.plot([right_x_1, right_x_2], [m_2*right_x_1 + b_2, m_2*right_x_2 + b_2], 'g.-') # plot right boundary line segments
-
 dnt_output_file.close() # close the file
 
 dnt_points_file = open(f"{date_dir_with_time}/DNT_points.csv", 'w', newline="") # output CSV file containing the points forming the DNT boundaries
@@ -173,7 +170,10 @@ for idx in range(len(dnt_left_boundary_xs)):
     y_1 = dnt_left_boundary_ys[idx]
     x_2 = dnt_right_boundary_xs[idx]
     y_2 = dnt_right_boundary_ys[idx]
-    dnt_points_writer.writerow([t, x_1, y_1, x_2, y_2])
+    dnt_points_writer.writerow([round(t, 2), x_1, y_1, x_2, y_2])
+
+launch_area_ax.plot(dnt_left_boundary_xs, dnt_left_boundary_ys, 'b.-')
+launch_area_ax.plot(dnt_right_boundary_xs, dnt_right_boundary_ys, 'g.-')
 
 dnt_points_file.close() # close the file
 

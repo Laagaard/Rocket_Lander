@@ -3,6 +3,7 @@ import contextily as cx
 import datetime
 import geopandas as gpd
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
@@ -51,7 +52,7 @@ Establish Launch Site Latitude & Longitude
 Source 1: Google Maps (ROAR, NAR section 795)
 https://www.google.com/maps/@28.5633031,-81.0187189,261m/data=!3m1!1e3?authuser=1&hl=en&entry=ttu&g_ep=EgoyMDI1MDEyOS4xIKXMDSoASAFQAw%3D%3D
 '''
-launch_site_latitude_ROAR = 27.563321 # [deg] North, launch site latitude (if launching with ROAR, NAR section 795))
+launch_site_latitude_ROAR = 28.563321 # [deg] North, launch site latitude (if launching with ROAR, NAR section 795))
 launch_site_longitude_ROAR = -81.018022 # [deg] West, launch site longitude (if launching with ROAR, NAR section 795))
 
 # Construct Launch Site Environment
@@ -217,13 +218,34 @@ gdf_launch_site = gpd.GeoDataFrame(data={"longitude": [launch_site.longitude],
                                     geometry=gpd.points_from_xy([launch_site.longitude], [launch_site.latitude]),
                                     crs="EPSG:4326") # create GeoDataFrame from lat/longs
 
-landing_zone_lats = [27.935514, 27.935504, 27.935499, 27.934703, 27.934706, 27.933877, 27.933002, 27.932312, 27.932334, 27.932334, 27.932334] # [deg] coordinates of landing zone centers (clockwise around launch site)
-landing_zone_longs = [-80.711389, -80.710455, -80.709524, -80.709506, -80.708361, -80.708351, -80.708350, -80.708283, -80.709533, -80.710461, -80.711391] # [deg] coordinates of landing zone centers (clockwise around launch site)
+'''
+Landing Zone Coordinates (if launching independently)
+'''
+landing_zone_lats_independent = [27.935514, 27.935504, 27.935499, 27.934703, 27.934706, 27.933877, 27.933002, 27.932312, 27.932334, 27.932334, 27.932334] # [deg] latitude coordinates of landing zone centers (clockwise around launch site)
+landing_zone_longs_independent = [-80.711389, -80.710455, -80.709524, -80.709506, -80.708361, -80.708351, -80.708350, -80.708283, -80.709533, -80.710461, -80.711391] # [deg] longitude coordinates of landing zone centers (clockwise around launch site)
 
-gdf_landing_zone_centers = gpd.GeoDataFrame(data={"longitude": landing_zone_longs,
-                                                  "latitude": landing_zone_lats,
+'''
+Landing Zone Coordinates (if launching with ROAR, NAR section 795)
+'''
+landing_zone_lats_ROAR = [launch_site.latitude + 0.001,         launch_site.latitude + 0.001,       launch_site.latitude + 0.001,       launch_site.latitude + 0.001,       launch_site.latitude + 0.001,
+                          launch_site.latitude + (2*0.001/3),   launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3),
+                          launch_site.latitude + 0.001/3,       launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,
+                          launch_site.latitude,                 launch_site.latitude,                                                   launch_site.latitude,               launch_site.latitude,
+                          launch_site.latitude - 0.001/3,       launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,
+                          launch_site.latitude - (2*0.001/3),   launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3),
+                          launch_site.latitude - 0.001,         launch_site.latitude - 0.001,       launch_site.latitude - 0.001,       launch_site.latitude - 0.001,       launch_site.latitude - 0.001] # [deg] latitude coordinates of landing zone centers
+landing_zone_longs_ROAR = [launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,                                        launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001] # [deg] longitude coordinates of landing zone centers
+
+gdf_landing_zone_centers = gpd.GeoDataFrame(data={"longitude": landing_zone_longs_ROAR,
+                                                  "latitude": landing_zone_lats_ROAR,
                                                   "color": "landing_zone"},
-                                            geometry=gpd.points_from_xy(landing_zone_longs, landing_zone_lats),
+                                            geometry=gpd.points_from_xy(landing_zone_longs_ROAR, landing_zone_lats_ROAR),
                                             crs="EPSG:4326") # create GeoDataFrame from lat/longs
 
 gdf_landing_zone_perimeters = gdf_landing_zone_centers.copy(deep=True)
