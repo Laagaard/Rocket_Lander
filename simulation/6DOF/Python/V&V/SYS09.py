@@ -8,23 +8,23 @@ import sys
 sys.path.append("../")
 from setup import launch_area_ax, launch_rail_length, launch_site, DART_rocket
 
-def check_dnt(current_time: float, current_long: float, current_lat: float, DNT_FILE_PATH: str, abort_counts: int, abort_count_threshold: int):
+def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
-    Function to Check the Current Rocket Position Against the Domain of Nominal Trajectories and Determine the Necessity of an In-Flight Abort
+    Method to Check the Current Rocket Position Against the Domain of Nominal Trajectories and Determine the Necessity of an In-Flight Abort
 
-    Inputs
+    Parameters
     ------
-    `current_time`: Current flight time [s]
-    `current_long`: Current longitude of the rocket's position
-    `current_lat`: Current latitude of the rocket's position
     `DNT_FILE_PATH`: Path to the CSV file containing the DNT information
-    `abort_count`: Counter to track the number of consecutive trajectory positions that have exited the DNT
-    `abort_count_threshold`: Number of consecutive trajectory positions that must exit the DNT to trigger an abort
+    `current_time`: Current flight time [s]
+    `current_long`: Current longitude of the rocket's position [deg]
+    `current_lat`: Current latitude of the rocket's position [deg]
+    `abort_counts`: Counter to track the number of consecutive trajectory positions that have exited the DNT, increments by 1 if an abort seems desired
+    `abort_count_threshold`: Number of consecutive trajectory positions that must exit the DNT to trigger an abort (default = 3)
 
-    Outputs
+    Returns
     -------
     `abort`: Boolean indicating the necessity of an abort (`True` if abort necessary, `False` otherwise)
-    `abort_counts`: Updated value of the `abort_counter` input
+    `abort_counts`: Updated value of the `abort_counts` input
     '''
 
     dnt_points_df = pd.read_csv(DNT_FILE_PATH) # Points of the DNT boundaries as a pandas df
@@ -41,20 +41,11 @@ def check_dnt(current_time: float, current_long: float, current_lat: float, DNT_
     if (not current_time >= min(positive_time)): # if the current time is not greater than or equal to the first positive DNT time step
         return False, abort_counts # to early to reasonably determine if abort is required
 
-    if (current_time > dnt_ts[-1]): # if the current time step exceeds the DNT limits
-        end_flag = True # flag to signal the trajectory has exceeded the end of the DNT time-wise (i.e., the rocket is over the landing zone)
-    #     dnt_points_indices = [len(dnt_ts) - 2, len(dnt_ts) - 1] # use the last two indices
-    else:
-        end_flag = False # the rocket has not exceeded the end of the DNT time-wise
-        # current_position_times = [(current_time - dnt_t_test) for dnt_t_test in dnt_ts]
-    #     dnt_optimal_index = len(current_position_lower_times) - 1 # get the index of the most recent DNT lower time bound
-    #     dnt_points_indices = [dnt_optimal_index, dnt_optimal_index + 1] # indices to use for DNT boundary points
-
     check_1s = [] # list to track all `check_1` booleans
     check_2s = [] # list to track all `check_2` booleans
     check_3s = [] # list to track all `check_3` booleans
     check_4s = [] # list to track all `check_4` booleans
-    # print(len(dnt_x_1s))
+
     for idx in range(len(dnt_x_1s) - 1):
         new_longitude_average = (dnt_x_1s[idx] + dnt_x_1s[idx + 1] + dnt_x_2s[idx] + dnt_x_2s[idx + 1])/4 # average longitude coordinate of all boundary coordinates applicable to the discretization
         dnt_average_longs.append(new_longitude_average)
@@ -73,13 +64,10 @@ def check_dnt(current_time: float, current_long: float, current_lat: float, DNT_
 
         special_case_1_flag = False # flag to indicate whether Special Case 1 is active
         if (left_x_1 == right_x_1 and left_y_1 == right_y_1): # Special Case 1: the DNT begins at a point, so the left and right boundaries collide (results in divide by zero error)
-            # print("Special Case 1")
             special_case_1_flag = True
         elif (left_x_1 == left_x_2 and left_y_1 == left_y_2): # Sometimes the DNT has consecutive points with the same coordinates, still unsure why, might be caused by time steps too small
-            # print("Special Case 2")
             continue # continue to the next loop iteration
         elif (right_x_1 == right_x_2 and right_y_1 == right_y_2): # Sometimes the DNT has consecutive points with the same coordinates, still unsure why, might be caused by time steps too small
-            # print("Special Case 3")
             continue # continue to the next loop iteration
 
         if (special_case_1_flag): # only run Angle Check 1 if special case 1 is not active
@@ -200,8 +188,6 @@ def check_dnt(current_time: float, current_long: float, current_lat: float, DNT_
 
             check_4 = bool(angle_vec10_vec11 > angle_vec10_vec12) # desire the angle between vec_10 and vec_11 to be greater than the angle between vec_10 and vec_12
 
-        # print(check_1, check_2, check_3, check_4)
-
         check_1s.append(check_1) # append `check_1` to the list of tracked check_1s
         check_2s.append(check_2) # append `check_2` to the list of tracked check_2s
         check_3s.append(check_3) # append `check_3` to the list of tracked check_3s
@@ -210,40 +196,16 @@ def check_dnt(current_time: float, current_long: float, current_lat: float, DNT_
     # Iterate Through Lists of "Checks"
     for idx in range(len(check_1s)):
         if (check_1s[idx] and check_2s[idx] and check_3s[idx] and check_4s[idx]): # if the rocket's position satifies all four checks for any DNT discretization
-            # TBR, will eroneously trigger abort when the rocket exceeds the limit of the DNT
+            # TBR, may eroneously trigger abort when the rocket exceeds the limit of the DNT (but by then we probably won't be checking the DNT anymore in the flight software)
             abort_counts = 0 # reset the abort counter
-            return False, abort_counts
+            return False, abort_counts # return no abort
 
     # Below code will only run if the rocket's position does not satisfy all four checks for any DNT discretization
     abort_counts += 1 # increment the abort counter
     if (abort_counts >= abort_count_threshold): # can be sufficiently confident the rocket has exited the DNT
-        return True, abort_counts
+        return True, abort_counts # return abort
     else:
-        return False, abort_counts
-
-        # launch_area_ax.plot([left_x_1, right_x_1], [left_y_1, right_y_1], 'k-')
-        # launch_area_ax.plot([current_long, left_x_1], [current_lat, left_y_1], 'm-')
-        # launch_area_ax.plot([current_long, right_x_1], [current_lat, right_y_1], 'm-')
-        # if (end_flag): # the rocket has exceeded the end of the DNT time-wise
-        #     if (any(check_1s) and any(check_4s)):
-        #         abort_counts = 0 # reset the abort counter
-        #         return False, abort_counts
-        #     else:
-        #         abort_counts += 1 # increment the abort counter
-        #         if (abort_counts >= abort_count_threshold): # can be sufficiently confident the rocket has exited the DNT
-        #             return True, abort_counts
-        #         else:
-        #             return False, abort_counts
-        # else: # the rocket has not exceeded the end of the DNT time-wise
-        #     if (any(check_1s) and any(check_2s) and any(check_3s) and any(check_4s)):
-        #         abort_counts = 0 # reset the abort counter
-        #         return False, abort_counts
-        #     else:
-        #         abort_counts += 1 # increment the abort counter
-        #         if (abort_counts >= abort_count_threshold): # can be sufficiently confident the rocket has exited the DNT
-        #             return True, abort_counts
-        #         else:
-        #             return False, abort_counts
+        return False, abort_counts # return no abort until `about_count_threshold` reached/surpassed
 
 try:
     launch_date = sys.argv[1] # MM-DD-YYYY format required
@@ -252,11 +214,8 @@ except (IndexError):
     print("NEED DATE AND TIME SPECIFIED ON THE COMMAND LINE: MM-DD-YYYY HH")
 
 date_path = f"../DNT/Results/{launch_date}" # path to the folder with the DNT information for the date of interest
-date_time_path = f"../DNT/Results/{launch_date}/{launch_hour}" # path to the folder with the DNT information for the date/time of interest
-dnt_file_path = f"{date_time_path}/DNT.csv" # path to the DNT CSV file
-dnt_df = pd.read_csv(dnt_file_path) # DNT CSV as a pandas df
 
-dnt_points_file_path = f"../DNT/Results/{launch_date}/{launch_hour}/DNT_points.csv" # path to the CSV file containing the points of the DNT boundaries
+dnt_points_file_path = f"../DNT/Results/{launch_date}/{launch_hour}/DNT.csv" # path to the CSV file containing the points of the DNT boundaries
 dnt_points_df = pd.read_csv(dnt_points_file_path) # Points of the DNT boundaries as a pandas df
 dnt_ts = dnt_points_df["t"].tolist() # list of timesteps defining the DNT
 dnt_x_1s = dnt_points_df["x_1"].tolist() # list of longitude coordinates of the DNT left boundary
@@ -265,17 +224,17 @@ dnt_x_2s = dnt_points_df["x_2"].tolist() # list of longitude coordinates of the 
 dnt_y_2s = dnt_points_df["y_2"].tolist() # list of latitude coordinates of the DNT right boundary
 
 launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-') # plot left boundary line segments
-launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'g.-') # plot right boundary line segments
+launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-') # plot right boundary line segments
 
 optimal_launch_information_file_path = f"{date_path}/{launch_date}.csv" # path to CSV file with optimal launch information for the date of interest
 optimal_launch_information_df = pd.read_csv(optimal_launch_information_file_path) # optimal launch information for the date of interest as a pandas df
 optimal_inclination = optimal_launch_information_df["Inclination"][0] # optimal launch inclination, TBR, not robust for multiple times per day
 optimal_heading = optimal_launch_information_df["Heading"][0] # optimal launch heading, TBR, not robust for multiple times per day
 
-num_trajectories = 5 # number of trajectories to simulate
+num_trajectories = 20 # number of trajectories to simulate
 for elem in range(num_trajectories):
-    launch_inclination = np.random.uniform(low=optimal_inclination - 0.5, high=optimal_inclination + 0.5) # [deg] randomly draw launch inclination
-    launch_heading = np.random.uniform(low=optimal_heading - 0.5, high=optimal_heading + 0.5) # [deg] randomly draw launch heading
+    launch_inclination = np.random.uniform(low=optimal_inclination - 2, high=optimal_inclination + 2) # [deg] randomly draw launch inclination
+    launch_heading = np.random.uniform(low=optimal_heading - 2, high=optimal_heading + 2) # [deg] randomly draw launch heading
     print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
     test_flight = Flight(
@@ -284,7 +243,7 @@ for elem in range(num_trajectories):
         rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
         inclination=launch_inclination, # [deg] rail inclination relative to the ground
         heading=launch_heading, # [deg] heading angle relative to North (East = 90)
-        time_overshoot=True # decouples ODE time step from parachute trigger fu nctions sampling rate
+        time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
     ) # run trajectory simulation
 
     abort_color = 'g' # plot in green if the trajectory remains within the DNT
@@ -297,17 +256,22 @@ for elem in range(num_trajectories):
         time_step_long = test_flight.longitude(time_step_time) # [deg] longitude position of the trajectory at the current time step
         time_step_lat = test_flight.latitude(time_step_time) # [deg] latitude position of the trajectory at the current time step
 
-        # print('\nCalling `check_dnts()`')
-        abort_bool, abort_counts = check_dnt(current_time=time_step_time, current_long=time_step_long, current_lat=time_step_lat, DNT_FILE_PATH=dnt_points_file_path, abort_counts=abort_counts, abort_count_threshold=abort_count_threshold)
+        abort_bool, abort_counts = check_dnt(DNT_FILE_PATH=dnt_points_file_path,
+                                             current_time=time_step_time,
+                                             current_long=time_step_long,
+                                             current_lat=time_step_lat,
+                                             abort_counts=abort_counts,
+                                             abort_count_threshold=abort_count_threshold)
 
         if (abort_bool and abort_counts >= abort_count_threshold):
             print("ABORT TRIGGERED")
             abort_color = 'r' # plot in red if the trajectory exits the DNT
 
-        launch_area_ax.plot(time_step_long, time_step_lat, '.', markersize=2, color=abort_color)
-
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
+    launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
 
 launch_area_ax.set_title(f"SYS.09 Verification")
 
+plt.tight_layout()
+plt.savefig(f"SYS09_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
 plt.show()
