@@ -38,6 +38,13 @@ class TVC:
         dt : float
             Time step for rate limiting.
         """
+
+        # If no new command is given, maintain the last commanded angle
+        if pitch_command is None:
+            pitch_command = self.gimbal_angle_x  # Keep last angle
+        if yaw_command is None:
+            yaw_command = self.gimbal_angle_y  # Keep last angle
+
         # Convert commands to numpy array
         command_vector = np.array([pitch_command, yaw_command])
         
