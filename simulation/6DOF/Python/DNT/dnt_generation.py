@@ -9,10 +9,10 @@ import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
 import sys
-from dataset_generation import date_dir_with_time, figures_output_dir, launch_area_ax
+from dataset_generation import figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 sys.path.append("../")
-from setup import automation_flag, launch_site
+from setup import automation_flag, date_dir_with_time, launch_site
 
 dnt_temporal_resolution = 0.1 # [s] time-step of each DNT discretization, be careful setting too high or too low
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization

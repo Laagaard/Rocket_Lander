@@ -6,7 +6,7 @@ import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
-from dataset_generation import date_dir_date_only, date_dir_with_time, date_string_date_only, date_string_time_only, date_string_with_time
+from dataset_generation import date_dir_date_only, date_dir_with_time
 
 trajectory_dataset_df = pd.read_csv(f"{date_dir_with_time}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 optimal_landing_zone_df = pd.read_csv(f"{date_dir_with_time}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
@@ -26,7 +26,7 @@ trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     from dataset_generation import figures_output_dir, launch_area_ax
-    from setup import automation_flag, DART_rocket, launch_rail_length, launch_site
+    from setup import automation_flag, DART_rocket, date_string_date_only, date_string_with_time, launch_rail_length, launch_site
 
     if (not bool(automation_flag)):
         print("\n---------- LAUNCH PARAMETERS ----------")

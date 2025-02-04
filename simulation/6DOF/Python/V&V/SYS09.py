@@ -6,7 +6,7 @@ import pandas as pd
 from rocketpy import Flight
 import sys
 sys.path.append("../")
-from setup import launch_area_ax, launch_rail_length, launch_site, DART_rocket
+from setup import DART_rocket, launch_area_ax, launch_rail_length, launch_site
 
 def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
@@ -39,7 +39,7 @@ def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, curr
 
     positive_time = list(filter(lambda time: time > 0, dnt_ts)) # list of DNT time steps greater than 0
     if (not current_time >= min(positive_time)): # if the current time is not greater than or equal to the first positive DNT time step
-        return False, abort_counts # to early to reasonably determine if abort is required
+        return False, abort_counts # too early to reasonably determine if abort is required
 
     check_1s = [] # list to track all `check_1` booleans
     check_2s = [] # list to track all `check_2` booleans
@@ -231,47 +231,48 @@ optimal_launch_information_df = pd.read_csv(optimal_launch_information_file_path
 optimal_inclination = optimal_launch_information_df["Inclination"][0] # optimal launch inclination, TBR, not robust for multiple times per day
 optimal_heading = optimal_launch_information_df["Heading"][0] # optimal launch heading, TBR, not robust for multiple times per day
 
-num_trajectories = 20 # number of trajectories to simulate
-for elem in range(num_trajectories):
-    launch_inclination = np.random.uniform(low=optimal_inclination - 2, high=optimal_inclination + 2) # [deg] randomly draw launch inclination
-    launch_heading = np.random.uniform(low=optimal_heading - 2, high=optimal_heading + 2) # [deg] randomly draw launch heading
-    print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
+if __name__ == "__main__":
+    num_trajectories = 20 # number of trajectories to simulate
+    for elem in range(num_trajectories):
+        launch_inclination = np.random.uniform(low=optimal_inclination - 2, high=optimal_inclination + 2) # [deg] randomly draw launch inclination
+        launch_heading = np.random.uniform(low=optimal_heading - 2, high=optimal_heading + 2) # [deg] randomly draw launch heading
+        print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
-    test_flight = Flight(
-        rocket=DART_rocket,
-        environment=launch_site,
-        rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
-        inclination=launch_inclination, # [deg] rail inclination relative to the ground
-        heading=launch_heading, # [deg] heading angle relative to North (East = 90)
-        time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
-    ) # run trajectory simulation
+        test_flight = Flight(
+            rocket=DART_rocket,
+            environment=launch_site,
+            rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
+            inclination=launch_inclination, # [deg] rail inclination relative to the ground
+            heading=launch_heading, # [deg] heading angle relative to North (East = 90)
+            time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
+        ) # run trajectory simulation
 
-    abort_color = 'g' # plot in green if the trajectory remains within the DNT
-    abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
-    abort_count_threshold = 3 # number of trajectory positions that must exit the DNT to trigger an abort
+        abort_color = 'g' # plot in green if the trajectory remains within the DNT
+        abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
+        abort_count_threshold = 3 # number of trajectory positions that must exit the DNT to trigger an abort
 
-    # Iterate through Solution Steps in the Simulated Trajectory
-    for solution_step in test_flight.solution:
-        time_step_time = solution_step[0] # [s] time of the current solution step
-        time_step_long = test_flight.longitude(time_step_time) # [deg] longitude position of the trajectory at the current time step
-        time_step_lat = test_flight.latitude(time_step_time) # [deg] latitude position of the trajectory at the current time step
+        # Iterate through Solution Steps in the Simulated Trajectory
+        for solution_step in test_flight.solution:
+            time_step_time = solution_step[0] # [s] time of the current solution step
+            time_step_long = test_flight.longitude(time_step_time) # [deg] longitude position of the trajectory at the current time step
+            time_step_lat = test_flight.latitude(time_step_time) # [deg] latitude position of the trajectory at the current time step
 
-        abort_bool, abort_counts = check_dnt(DNT_FILE_PATH=dnt_points_file_path,
-                                             current_time=time_step_time,
-                                             current_long=time_step_long,
-                                             current_lat=time_step_lat,
-                                             abort_counts=abort_counts,
-                                             abort_count_threshold=abort_count_threshold)
+            abort_bool, abort_counts = check_dnt(DNT_FILE_PATH=dnt_points_file_path,
+                                                current_time=time_step_time,
+                                                current_long=time_step_long,
+                                                current_lat=time_step_lat,
+                                                abort_counts=abort_counts,
+                                                abort_count_threshold=abort_count_threshold)
 
-        if (abort_bool and abort_counts >= abort_count_threshold):
-            print("ABORT TRIGGERED")
-            abort_color = 'r' # plot in red if the trajectory exits the DNT
+            if (abort_bool and abort_counts >= abort_count_threshold):
+                print("ABORT TRIGGERED")
+                abort_color = 'r' # plot in red if the trajectory exits the DNT
 
-    solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
-    launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
+        solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
+        launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
 
-launch_area_ax.set_title(f"SYS.09 Verification")
+    launch_area_ax.set_title(f"SYS.09 Verification")
 
-plt.tight_layout()
-plt.savefig(f"SYS09_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
-plt.show()
+    plt.tight_layout()
+    plt.savefig(f"SYS09_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
+    plt.show()

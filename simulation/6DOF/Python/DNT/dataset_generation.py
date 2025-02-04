@@ -13,15 +13,7 @@ from scipy.spatial import ConvexHull
 import shutil
 import sys
 sys.path.append("../") # Tell Python where to look for the `setup.py` file
-from setup import all_landing_zone_perimeters, automation_flag, DART_rocket, gdf_landing_zone_centers, launch_rail_length, launch_site, launch_area_ax, remove_readonly, results_dir
-
-date_format_string_date_only = "%m-%d-%Y"
-date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
-date_dir_date_only = f"{results_dir}/{date_string_date_only}"
-date_format_string_time_only = "%H"
-date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
-date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
-date_string_with_time = f"{date_string_date_only}-{date_string_time_only}"
+from setup import all_landing_zone_perimeters, automation_flag, DART_rocket, date_dir_date_only, date_dir_with_time, gdf_landing_zone_centers, launch_rail_length, launch_site, launch_area_ax, remove_readonly, results_dir
 
 figures_output_dir = f"{date_dir_with_time}/figures" # output directory for matplotlib figures
 

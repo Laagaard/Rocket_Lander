@@ -3,7 +3,6 @@ import contextily as cx
 import datetime
 import geopandas as gpd
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
@@ -63,6 +62,14 @@ launch_site = Environment(
     elevation=4, # [m] launch site elevation above sea level
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
+
+date_format_string_date_only = "%m-%d-%Y"
+date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
+date_dir_date_only = f"{results_dir}/{date_string_date_only}"
+date_format_string_time_only = "%H"
+date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
+date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
+date_string_with_time = f"{date_string_date_only}-{date_string_time_only}"
 
 '''
 -------------------- Add Forecast (i.e., Wind) Information --------------------
@@ -192,20 +199,6 @@ DART_fins = DART_rocket.add_trapezoidal_fins(
     cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
     airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
 )
-
-# Parachute Characteristics
-C_D = 0.84 # [unitless] parachute drag coefficient
-parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
-
-# Construct Parachute
-# main = DART_rocket.add_parachute(
-#     name="main", # name of the parachute (no impact on simulation)
-#     cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
-#     trigger="apogee", # will trigger the parachute deployment at apogee (can also use a callable function based on fresstream pressure, altitude, and state vector)
-#     sampling_rate=10, # [Hz] sampling rate in which the trigger function works (used to simulate sensor refresh rates)
-#     lag=0, # [s] time between the ejection system is triggers and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
-#     noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
-# )
 
 '''
 Satellite Image for Plotting Launch Site and Landing Zones, Trajectories, etc.
