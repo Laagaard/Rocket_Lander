@@ -1,12 +1,14 @@
 # Libraries
 import math
+from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from rocketpy import Flight
+from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
-from setup import DART_rocket, launch_area_ax, launch_rail_length, launch_site
+from setup import DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
 
 def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
@@ -39,6 +41,7 @@ def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, curr
 
     positive_time = list(filter(lambda time: time > 0, dnt_ts)) # list of DNT time steps greater than 0
     if (not current_time >= min(positive_time)): # if the current time is not greater than or equal to the first positive DNT time step
+        abort_counts = 0 # reset the abort counter
         return False, abort_counts # too early to reasonably determine if abort is required
 
     check_1s = [] # list to track all `check_1` booleans
@@ -211,9 +214,17 @@ try:
     launch_date = sys.argv[1] # MM-DD-YYYY format required
     launch_hour = sys.argv[2] # HH format required (24-hour)
 except (IndexError):
+    print("---------------------------------------------------------------")
     print("NEED DATE AND TIME SPECIFIED ON THE COMMAND LINE: MM-DD-YYYY HH")
+    print("---------------------------------------------------------------")
 
-date_path = f"../DNT/Results/{launch_date}" # path to the folder with the DNT information for the date of interest
+optimal_landing_zone_df = pd.read_csv(f"../DNT/{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
+optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter
+
+ellipse = EllipseModel()
+if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
+    landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
+    launch_area_ax.add_patch(landing_zone_patch)
 
 dnt_points_file_path = f"../DNT/Results/{launch_date}/{launch_hour}/DNT.csv" # path to the CSV file containing the points of the DNT boundaries
 dnt_points_df = pd.read_csv(dnt_points_file_path) # Points of the DNT boundaries as a pandas df
@@ -223,8 +234,10 @@ dnt_y_1s = dnt_points_df["y_1"].tolist() # list of latitude coordinates of the D
 dnt_x_2s = dnt_points_df["x_2"].tolist() # list of longitude coordinates of the DNT right boundary
 dnt_y_2s = dnt_points_df["y_2"].tolist() # list of latitude coordinates of the DNT right boundary
 
-launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-') # plot left boundary line segments
-launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-') # plot right boundary line segments
+launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
+launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
+
+date_path = f"../DNT/Results/{launch_date}" # path to the folder with the DNT information for the date of interest
 
 optimal_launch_information_file_path = f"{date_path}/{launch_date}.csv" # path to CSV file with optimal launch information for the date of interest
 optimal_launch_information_df = pd.read_csv(optimal_launch_information_file_path) # optimal launch information for the date of interest as a pandas df
@@ -232,10 +245,10 @@ optimal_inclination = optimal_launch_information_df["Inclination"][0] # optimal 
 optimal_heading = optimal_launch_information_df["Heading"][0] # optimal launch heading, TBR, not robust for multiple times per day
 
 if __name__ == "__main__":
-    num_trajectories = 20 # number of trajectories to simulate
+    num_trajectories = 250 # number of trajectories to simulate
     for elem in range(num_trajectories):
-        launch_inclination = np.random.uniform(low=optimal_inclination - 2, high=optimal_inclination + 2) # [deg] randomly draw launch inclination
-        launch_heading = np.random.uniform(low=optimal_heading - 2, high=optimal_heading + 2) # [deg] randomly draw launch heading
+        launch_inclination = np.random.uniform(low=optimal_inclination - 1, high=optimal_inclination + 1) # [deg] randomly draw launch inclination
+        launch_heading = np.random.uniform(low=optimal_heading - 1, high=optimal_heading + 1) # [deg] randomly draw launch heading
         print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
         test_flight = Flight(
@@ -247,9 +260,10 @@ if __name__ == "__main__":
             time_overshoot=True # decouples ODE time step from parachute trigger functions sampling rate
         ) # run trajectory simulation
 
+        abort_bools = [] # list to track the `abort_bool` values returned from `check_dnt()`
         abort_color = 'g' # plot in green if the trajectory remains within the DNT
         abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
-        abort_count_threshold = 3 # number of trajectory positions that must exit the DNT to trigger an abort
+        abort_count_threshold = 5 # number of trajectory positions that must exit the DNT to trigger an abort
 
         # Iterate through Solution Steps in the Simulated Trajectory
         for solution_step in test_flight.solution:
@@ -257,19 +271,23 @@ if __name__ == "__main__":
             time_step_long = test_flight.longitude(time_step_time) # [deg] longitude position of the trajectory at the current time step
             time_step_lat = test_flight.latitude(time_step_time) # [deg] latitude position of the trajectory at the current time step
 
-            abort_bool, abort_counts = check_dnt(DNT_FILE_PATH=dnt_points_file_path,
-                                                current_time=time_step_time,
-                                                current_long=time_step_long,
-                                                current_lat=time_step_lat,
-                                                abort_counts=abort_counts,
-                                                abort_count_threshold=abort_count_threshold)
+            if (landing_zone_patch.contains_point(point=launch_area_ax.transData.transform(values=(time_step_long, time_step_lat)))): # if the trajectory is within the landing zone
+                abort_bool = False # don't trigger an abort (but don't reset the abort counter)
+            else: # check the rocket's position against the DNT
+                abort_bool, abort_counts = check_dnt(DNT_FILE_PATH=dnt_points_file_path,
+                                                    current_time=time_step_time,
+                                                    current_long=time_step_long,
+                                                    current_lat=time_step_lat,
+                                                    abort_counts=abort_counts,
+                                                    abort_count_threshold=abort_count_threshold)
+            abort_bools.append(abort_bool)
 
-            if (abort_bool and abort_counts >= abort_count_threshold):
-                print("ABORT TRIGGERED")
-                abort_color = 'r' # plot in red if the trajectory exits the DNT
+        if (any(abort_bools)): # if an abort was ever triggered
+            print("ABORT TRIGGERED")
+            abort_color = 'r' # plot in red if the trajectory exits the DNT
 
         solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
-        launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
+        launch_area_ax.plot(test_flight.longitude(solution_time[-1]), test_flight.latitude(solution_time[-1]), '.', color=abort_color, markersize=1)
 
     launch_area_ax.set_title(f"SYS.09 Verification")
 
