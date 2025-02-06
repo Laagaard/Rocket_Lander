@@ -245,7 +245,7 @@ optimal_inclination = optimal_launch_information_df["Inclination"][0] # optimal 
 optimal_heading = optimal_launch_information_df["Heading"][0] # optimal launch heading, TBR, not robust for multiple times per day
 
 if __name__ == "__main__":
-    num_trajectories = 250 # number of trajectories to simulate
+    num_trajectories = 50 # number of trajectories to simulate
     for elem in range(num_trajectories):
         launch_inclination = np.random.uniform(low=optimal_inclination - 1, high=optimal_inclination + 1) # [deg] randomly draw launch inclination
         launch_heading = np.random.uniform(low=optimal_heading - 1, high=optimal_heading + 1) # [deg] randomly draw launch heading
@@ -287,7 +287,7 @@ if __name__ == "__main__":
             abort_color = 'r' # plot in red if the trajectory exits the DNT
 
         solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
-        launch_area_ax.plot(test_flight.longitude(solution_time[-1]), test_flight.latitude(solution_time[-1]), '.', color=abort_color, markersize=1)
+        launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), '-', color=abort_color, markersize=1)
 
     launch_area_ax.set_title(f"SYS.09 Verification")
 
