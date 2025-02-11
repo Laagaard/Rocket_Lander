@@ -8,7 +8,7 @@ from rocketpy import Flight
 from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
-from setup import DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
+from setup import command_line_args, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
 
 def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
@@ -211,8 +211,8 @@ def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, curr
         return False, abort_counts # return no abort until `about_count_threshold` reached/surpassed
 
 try:
-    launch_date = sys.argv[1] # MM-DD-YYYY format required
-    launch_hour = sys.argv[2] # HH format required (24-hour)
+    launch_date = command_line_args["date"] # MM-DD-YYYY format required
+    launch_hour = command_line_args["time"] # HH format required (24-hour)
 except (IndexError):
     print("---------------------------------------------------------------")
     print("NEED DATE AND TIME SPECIFIED ON THE COMMAND LINE: MM-DD-YYYY HH")
