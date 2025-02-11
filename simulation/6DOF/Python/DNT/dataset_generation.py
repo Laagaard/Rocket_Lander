@@ -61,7 +61,7 @@ if __name__ == "__main__":
             trajectory_information = [test_flight.inclination, test_flight.heading, impact_longitude, impact_latitude]
             trajectory_dataset_writer.writerow(trajectory_information) # write trajectory information to output CSV file
 
-            if (not bool(automation_flag)): # if the script is being run manually (i.e., not by an automatic runner)
+            if (not automation_flag): # if the script is being run manually (i.e., not by an automatic runner)
                 print(f"Inclination: {round(test_flight.inclination, 2)} deg, Heading: {round(test_flight.heading, 2)} deg")
 
             if (launch_heading < 360): # launch heading can be increased more
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     # Record Latitude and Longitude of Optimal Landing Zone Center
     if (success_bool):
-        if (not bool(automation_flag)): # if the script is being run manually
+        if (not automation_flag): # if the script is being run manually
             print("Houston, we have an INTERPOLATION problem")
         optimal_index = np.where(np.all(all_landing_zone_perimeters == perimeter_coords, axis=(1,2)))[0][0]
         optimal_landing_zone_center_longitude = gdf_landing_zone_centers["longitude"][optimal_index] # [deg] longitude of the center of the optimal landing zone
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         optimal_landing_zone_information = [optimal_index, optimal_landing_zone_center_longitude, optimal_landing_zone_center_latitude]
         optimal_landing_zone_writer.writerow(optimal_landing_zone_information)
     else:
-        if (not bool(automation_flag)): # if the script is being run manually
+        if (not automation_flag): # if the script is being run manually
             print("Houston, we have an EXTRAPOLATION problem")
         optimal_landing_zone_writer.writerow(["None", "None", "None"])
     optimal_landing_zone_output_file.close()
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(f"{figures_output_dir}/impact_area.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
-    if (not bool(automation_flag)): # if the script is being run manually
+    if (not automation_flag): # if the script is being run manually
         plt.show() # show the graph

@@ -56,7 +56,7 @@ if __name__ == "__main__":
             continue
         iteration_counter += 1
 
-        if (not bool(automation_flag)):
+        if (not automation_flag):
             print(f"Iteration: {idx}, Inclination: {np.round(launch_inclination, 2)} deg, Heading: {np.round(launch_heading, 2)} deg")
 
         solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(f"{figures_output_dir}/dnt_trajectories.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
-    if (not bool(automation_flag)):
+    if (not automation_flag):
         plt.show()
         print(f"\n---------- SIMULATION RESULTS ----------")
         print(f"Trajectories Attempted: {number_of_perimeter_points}")

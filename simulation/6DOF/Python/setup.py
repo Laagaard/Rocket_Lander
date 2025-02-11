@@ -6,9 +6,11 @@ import math
 import numpy as np
 import os
 import pandas as pd
+import re
 from rocketpy import Environment, SolidMotor, Rocket, prints
 import stat
 import sys
+import warnings
 
 # Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
 def remove_readonly(func, path, excinfo):
@@ -22,21 +24,35 @@ if os.path.exists(results_dir):
 else:
     os.mkdir(results_dir) # Create folder for all results for the given date/time
 
+command_line_args = {
+  "date": "",
+  "time": "",
+  "location": "",
+  "automated": False # default value indicates the script is being run manually
+} # dictionary of recognized command line arguments
+
+for idx in range(1, len(sys.argv), 2): # iterate over command line arguments
+    try:
+        command_line_regex = re.match("--[A-Za-z]+", sys.argv[idx]).group(0)[2:] # attempt to match the argument key to the format "--<KEY>""
+    except (AttributeError): # AttributeError thrown when the regex fails to match
+        warnings.warn(f"\"{sys.argv[idx]}\" is not a valid command line argument ke")
+        continue
+    if (command_line_regex in command_line_args): # if regex-compliant argument matches one of the keys in the dictionary
+        command_line_args[command_line_regex] = sys.argv[idx + 1] # assign the corresponding command line arg to the dictionary value
+
 # Establish Launch Date and Time (EST)
-if (len(sys.argv) != 1): # sys.argv[0] is the program name
-    launch_date = datetime.datetime.strptime(sys.argv[1], "%m-%d-%Y") # launch date
-    launch_hour = int(sys.argv[2])
+if (command_line_args["date"] != "" and command_line_args["time"] != ""): # if the launch date and time were passed as command line arguments
+    launch_date = datetime.datetime.strptime(command_line_args["date"], "%m-%d-%Y") # launch date
+    launch_hour = int(command_line_args["time"])
     launch_time = datetime.time(hour=launch_hour, minute=00) # # launch time (hr, min) (input as EST)
     launch_date_and_time = datetime.datetime.combine(launch_date, launch_time) # launch date and time
-    if (len(sys.argv) > 4):
-        automation_flag = int(sys.argv[4]) # flag to signal the program is being executed by an automatic runner
-    else:
-        automation_flag = 0 # the program is being executed manually
-else: # use current date and time if none provided on the command line
+else: # the launch date and time were NOT passed as command line arguments
     launch_date_and_time = datetime.datetime.now() # launch date and time
 
 est_timezone = datetime.timezone(datetime.timedelta(hours=-5)) # UTC to EST timezone conversion
 launch_date_and_time = launch_date_and_time.astimezone(est_timezone) # Ensure time used is EST
+
+automation_flag = command_line_args["automated"] # # flag to signal whether or not the program is being executed by an automatic runner
 
 '''
 Establish Launch Site Latitude & Longitude
@@ -53,6 +69,15 @@ https://www.google.com/maps/@28.5633031,-81.0187189,261m/data=!3m1!1e3?authuser=
 '''
 launch_site_latitude_ROAR = 28.563321 # [deg] North, launch site latitude (if launching with ROAR, NAR section 795))
 launch_site_longitude_ROAR = -81.018022 # [deg] West, launch site longitude (if launching with ROAR, NAR section 795))
+
+# Set the Launch Site Location
+match (command_line_args["location"]):
+    case ("independent"): # launching independently (i.e., without a NAR section) at the SRA launch site in the Compound
+        launch_site_latitude = launch_site_latitude_independent
+        launch_site_longitude = launch_site_longitude_independent
+    case ("ROAR"): # launching with Regional Orlando Applied Rocketry (NAR Section 795, https://www.flroar.space/)
+        launch_site_latitude = launch_site_latitude_ROAR
+        launch_site_longitude = launch_site_longitude_ROAR
 
 # Construct Launch Site Environment
 launch_site = Environment(

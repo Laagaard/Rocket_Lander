@@ -57,16 +57,39 @@ motor_weight_offset = cumtrapz(time_processed_notable_thrust, best_experimental_
 load_processed_accounting_for_weight = load_processed_notable_thrust + abs(motor_weight_offset); % [N] apply changing motor weight
 
 %% Thrust Curve
+thrust_curve_animation = VideoWriter("thrust_curve_animation", "MPEG-4");
+open(thrust_curve_animation);
+
 figure("Name", "Thrust Curve")
+thrust_curves_plot_handle = gcf;
 hold on
-plot(time_processed_notable_thrust, load_processed_accounting_for_weight, 'bs-')
-plot(theoretical_data(:,1), theoretical_data(:,2), 'rs-')
 grid minor
 title("Thrust [N] vs. Time [s]", interpreter="latex")
 xlabel("Time [s]", interpreter="latex")
 ylabel("Thrust [N]", Interpreter="latex")
-legend({"Experimental Thrust", "Theoretical Thrust"})
+plot(theoretical_data(:,1), theoretical_data(:,2), 'rs-', 'DisplayName', "Expected Thrust");
+plot(time_processed_notable_thrust, load_processed_accounting_for_weight, 'bs-', 'DisplayName', "Measured Thrust")
+legend()
+
+animation_current_X = [0, 0];
+animation_current_Y = [0, 0];
+thrust_curves_plot = plot(animation_current_X, animation_current_Y, 'k.-', 'HandleVisibility', 'off');
+
+thrust_curves_plot.XDataSource = "animation_current_X";
+thrust_curves_plot.YDataSource = "animation_current_Y";
+for idx = 1:max(size(time_processed_notable_thrust))
+    animation_current_X = time_processed_notable_thrust(idx).*ones(1,2);
+    animation_current_Y(end) = load_processed_accounting_for_weight(idx);
+    refreshdata(thrust_curves_plot)
+    pause(0.25)
+
+    % Update orientation plot animation
+    thrust_curve_frame = getframe(thrust_curves_plot_handle);
+    writeVideo(thrust_curve_animation, thrust_curve_frame);
+end
 hold off
+
+close(thrust_curve_animation)
 
 %% Performance Comparison
 predicted_impulse = 117.5; % [N*s] (https://www.thrustcurve.org/simfiles/5f4294d20002e9000000045f/)
@@ -88,7 +111,7 @@ experimental_impulse_for_average_thrust = trapz(time_vector_for_burn_time, load_
 experimental_average_thrust = experimental_impulse_for_average_thrust/experimental_burn_time; % [N] average thrust defined as impulse divided by burn time (https://www.thrustcurve.org/info/glossary.html)
 
 results_table = table('Size', [2, 4], 'VariableTypes', {'double', 'double', 'double', 'double'}, ...
-                      'RowNames', {'Expected', 'Experimental'}, 'VariableNames', {'Total Impulse [N*s]', 'Max Thrust [N]', 'Average Thrust [N]', 'Burn Time [s]'});
+                      'RowNames', {'Expected', 'Measured'}, 'VariableNames', {'Total Impulse [N*s]', 'Max Thrust [N]', 'Average Thrust [N]', 'Burn Time [s]'});
 results_table{1,:} = [predicted_impulse, predicted_max_thrust, predicted_average_thrust, predicted_burn_time]; % add predicted values to results table
 results_table{2,:} = [experimental_total_impulse, experimental_max_thrust, experimental_average_thrust, experimental_burn_time]; % add experimental values to results table
 disp(results_table)

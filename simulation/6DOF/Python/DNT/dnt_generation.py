@@ -44,7 +44,7 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
     launch_area_ax.add_patch(landing_zone_patch)
     # Loop until the optimal trajectory enters the landing zone
     while (not landing_zone_patch.contains_point(point=launch_area_ax.transData.transform(values=(reference_longitude, reference_latitude)))):
-        if (not bool(automation_flag)):
+        if (not automation_flag):
             print(f"Current Time: {round(timestep_current_lower_bound, 2)}")
         optimal_idx = (optimal_df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
         reference_longitude = optimal_df["longitude"][optimal_idx] # [m] longitude coordinate of reference location
@@ -154,5 +154,5 @@ dnt_file.close() # close the file
 plt.tight_layout()
 plt.savefig(f"{figures_output_dir}/DNT.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
-if (not bool(automation_flag)): # if the script is being run manually
+if (not automation_flag): # if the script is being run manually
     plt.show()

@@ -29,7 +29,7 @@ trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", 
 if __name__ == "__main__":
     from dataset_generation import figures_output_dir, launch_area_ax
 
-    if (not bool(automation_flag)):
+    if (not automation_flag):
         print("\n---------- LAUNCH PARAMETERS ----------")
         print(f"Landing Zone: {landing_zone_number}")
         print(f"Optimal Inclination: {np.round(optimal_inclination, 2)} deg")
@@ -74,5 +74,5 @@ if __name__ == "__main__":
     print(f"{date_string_with_time}, Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg, LZ: {landing_zone_number}, Impact Angle: {np.round(final_angle, 2)} deg")
     plt.savefig(f"{figures_output_dir}/optimal_trajectory.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
-    if (not bool(automation_flag)): # if the script is being run manually
+    if (not automation_flag): # if the script is being run manually
         plt.show()
