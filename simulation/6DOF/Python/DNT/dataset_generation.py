@@ -1,13 +1,10 @@
 # Libraries
-import contextily as cx
 import csv
-import geopandas as gpd
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
 from rocketpy import Flight
 from scipy.spatial import ConvexHull
 import shutil

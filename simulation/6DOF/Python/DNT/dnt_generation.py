@@ -14,7 +14,7 @@ from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 sys.path.append("../")
 from setup import automation_flag, date_dir_with_time, launch_site
 
-dnt_temporal_resolution = 0.1 # [s] time-step of each DNT discretization, be careful setting too high or too low
+dnt_temporal_resolution = 0.15 # [s] time-step of each DNT discretization, be careful setting too high or too low
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization
 dnt_left_boundary_xs = [launch_site.longitude] # [m] x-coordinates comprising the left boundary of the DNT
 dnt_left_boundary_ys = [launch_site.latitude] # [m] y-coordinates comprising the left boundary of the DNT

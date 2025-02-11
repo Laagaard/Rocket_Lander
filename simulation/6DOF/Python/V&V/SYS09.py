@@ -234,9 +234,6 @@ dnt_y_1s = dnt_points_df["y_1"].tolist() # list of latitude coordinates of the D
 dnt_x_2s = dnt_points_df["x_2"].tolist() # list of longitude coordinates of the DNT right boundary
 dnt_y_2s = dnt_points_df["y_2"].tolist() # list of latitude coordinates of the DNT right boundary
 
-launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
-launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
-
 date_path = f"../DNT/Results/{launch_date}" # path to the folder with the DNT information for the date of interest
 
 optimal_launch_information_file_path = f"{date_path}/{launch_date}.csv" # path to CSV file with optimal launch information for the date of interest
@@ -263,7 +260,7 @@ if __name__ == "__main__":
         abort_bools = [] # list to track the `abort_bool` values returned from `check_dnt()`
         abort_color = 'g' # plot in green if the trajectory remains within the DNT
         abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
-        abort_count_threshold = 5 # number of trajectory positions that must exit the DNT to trigger an abort
+        abort_count_threshold = 3 # number of trajectory positions that must exit the DNT to trigger an abort
 
         # Iterate through Solution Steps in the Simulated Trajectory
         for solution_step in test_flight.solution:
@@ -289,6 +286,8 @@ if __name__ == "__main__":
         solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
         launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), '-', color=abort_color, markersize=1)
 
+    launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
+    launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
     launch_area_ax.set_title(f"SYS.09 Verification")
 
     plt.tight_layout()

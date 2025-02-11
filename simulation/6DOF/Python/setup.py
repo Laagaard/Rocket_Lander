@@ -106,11 +106,11 @@ if __name__ == "__main__":
     launch_site_prints = prints.environment_prints._EnvironmentPrints(launch_site)
     launch_site_prints.all()
     # Set Path to the Thrust Curve Source
-    thrust_source_path = "../../../AeroTechG25W_thrustcurve.csv"
+    thrust_source_path = "../../../DART_AeroTechG25W_thrustcurve.csv"
     # Set Path to the Fin Airfoil Geometry Source
     fin_airfoil_source_path = "NACA0012.csv"
 else:
-    thrust_source_path = "../../../../AeroTechG25W_thrustcurve.csv" # TBR, not a robust solution (only works from a directory one level higher)
+    thrust_source_path = "../../../../DART_AeroTechG25W_thrustcurve.csv" # TBR, not a robust solution (only works from a directory one level higher)
     fin_airfoil_source_path = "../NACA0012.csv" # same TBR as above
 
 # AeroTech-G25W Motor Characteristics

@@ -11,7 +11,7 @@ from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
 from setup import all_landing_zone_perimeters, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site
-from SYS09 import check_dnt, launch_area_ax, optimal_heading, optimal_inclination
+from SYS09 import check_dnt, dnt_x_1s, dnt_x_2s, dnt_y_1s, dnt_y_2s, launch_area_ax, optimal_heading, optimal_inclination
 
 def parachute_trigger(p, h, y):
     '''
@@ -62,7 +62,7 @@ def parachute_trigger(p, h, y):
                                             current_lat=updated_lat,
                                             abort_counts=abort_counts,
                                             abort_count_threshold=abort_count_threshold) # check the rocket's position against the relevant DNT
-    if (abort_bool and z_vel < 0): # if the rocket has exited the DNT and is at or past apogee (i.e., no longer ascending)
+    if ((abort_counts > abort_count_threshold) and z_vel < 0): # if the rocket has exited the DNT and is at or past apogee (i.e., no longer ascending)
         print("PARACHUTE TRIGGERED")
         return True # deploy the parachute
     else:
@@ -114,6 +114,8 @@ for elem in range(num_trajectories):
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
 
+launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
+launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
 launch_area_ax.set_title("SYS.10 Verification")
 plt.tight_layout()
 plt.savefig(f"SYS10_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
