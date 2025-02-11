@@ -9,12 +9,12 @@ import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
 import sys
-from dataset_generation import date_dir_with_time, figures_output_dir, launch_area_ax
+from dataset_generation import figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
 sys.path.append("../")
-from setup import automation_flag, launch_site
+from setup import automation_flag, date_dir_with_time, launch_site
 
-dnt_temporal_resolution = 0.1 # [s] time-step of each DNT discretization, be careful setting too high or too low
+dnt_temporal_resolution = 0.15 # [s] time-step of each DNT discretization, be careful setting too high or too low
 timestep_current_lower_bound = dnt_temporal_resolution # [s] lower time bound of current discretization
 dnt_left_boundary_xs = [launch_site.longitude] # [m] x-coordinates comprising the left boundary of the DNT
 dnt_left_boundary_ys = [launch_site.latitude] # [m] y-coordinates comprising the left boundary of the DNT
@@ -46,15 +46,19 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
     while (not landing_zone_patch.contains_point(point=launch_area_ax.transData.transform(values=(reference_longitude, reference_latitude)))):
         if (not bool(automation_flag)):
             print(f"Current Time: {round(timestep_current_lower_bound, 2)}")
-        time_color = (np.random.uniform(0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1)) # generate a new plotting color
         optimal_idx = (optimal_df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
         reference_longitude = optimal_df["longitude"][optimal_idx] # [m] longitude coordinate of reference location
         reference_latitude = optimal_df["latitude"][optimal_idx] # [m] latitude coordinate of reference location
         optimal_vx = optimal_df["x_vel"][optimal_idx] # [m/s] x_velocity of the optimal trajectory nearest the time step of interest
         optimal_vy = optimal_df["y_vel"][optimal_idx] # [m/s] y_velocity of the optimal trajectory nearest the time step of interest
-        optimal_traj_tangent_slope = optimal_vy/optimal_vx # slope of tangent line to the optimal trajectory
-        optimal_traj_tangent_line = Line(point=[reference_longitude, reference_latitude], direction=[1, optimal_traj_tangent_slope]) # line tangent to the trajectory
-        optimal_traj_normal_line = Line(point=[reference_longitude, reference_latitude], direction=[1, -1/optimal_traj_tangent_slope]) # line perpendicular to the trajectory
+
+        try:
+            optimal_traj_tangent_slope = optimal_vy/optimal_vx # slope of tangent line to the optimal trajectory
+            optimal_traj_tangent_line = Line(point=[reference_longitude, reference_latitude], direction=[1, optimal_traj_tangent_slope]) # line tangent to the trajectory
+            optimal_traj_normal_line = Line(point=[reference_longitude, reference_latitude], direction=[1, -1/optimal_traj_tangent_slope]) # line perpendicular to the trajectory
+        except (ValueError): # ValueError thrown if `optimal_vx` or `optimal_vy` equals zero (results in infinite slope for one of the lines)
+            timestep_current_lower_bound += dnt_temporal_resolution # increment current time step
+            continue
 
         # Iterate over files in `dnt_trajectories` directory
         for filename in os.listdir(CSV_output_dir):
@@ -142,8 +146,8 @@ for idx in range(len(dnt_left_boundary_xs)):
     y_2 = dnt_right_boundary_ys[idx]
     dnt_writer.writerow([round(t, 2), x_1, y_1, x_2, y_2])
 
-launch_area_ax.plot(dnt_left_boundary_xs, dnt_left_boundary_ys, 'b.-')
-launch_area_ax.plot(dnt_right_boundary_xs, dnt_right_boundary_ys, 'g.-')
+launch_area_ax.plot(dnt_left_boundary_xs, dnt_left_boundary_ys, 'b.-', markersize=1)
+launch_area_ax.plot(dnt_right_boundary_xs, dnt_right_boundary_ys, 'b.-', markersize=1)
 
 dnt_file.close() # close the file
 

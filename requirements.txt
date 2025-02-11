@@ -2,6 +2,7 @@
 contextily
 datetime
 geopandas
+geopy
 matplotlib
 numpy
 pandas
