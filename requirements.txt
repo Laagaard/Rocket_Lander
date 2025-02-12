@@ -6,8 +6,6 @@ geopy
 matplotlib
 numpy
 pandas
-re
 rocketpy
 scikit-image
 scikit-spatial
-warnings
