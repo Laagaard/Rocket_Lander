@@ -11,7 +11,6 @@ from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
 from setup import all_landing_zone_perimeters, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site
-from SYS09 import check_dnt, dnt_x_1s, dnt_x_2s, dnt_y_1s, dnt_y_2s, launch_area_ax, optimal_heading, optimal_inclination
 
 def parachute_trigger(p, h, y):
     '''
@@ -68,14 +67,6 @@ def parachute_trigger(p, h, y):
     else:
         return False # do not deploy the parachute
 
-optimal_landing_zone_df = pd.read_csv(f"../DNT/{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
-optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter
-
-ellipse = EllipseModel()
-if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
-    landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
-    launch_area_ax.add_patch(landing_zone_patch)
-
 # Parachute Characteristics
 C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
@@ -93,6 +84,16 @@ main_parachute = DART_rocket.add_parachute(
 abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
 
 if (__name__ == "__main__"):
+    from SYS09 import check_dnt, dnt_x_1s, dnt_x_2s, dnt_y_1s, dnt_y_2s, launch_area_ax, optimal_heading, optimal_inclination
+
+    optimal_landing_zone_df = pd.read_csv(f"../DNT/{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
+    optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter 
+
+    ellipse = EllipseModel()
+    if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
+        landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
+        launch_area_ax.add_patch(landing_zone_patch)
+
     num_trajectories = 50 # number of trajectories to simulate
     for elem in range(num_trajectories):
         launch_inclination = np.random.uniform(low=optimal_inclination - 1, high=optimal_inclination + 1) # [deg] randomly draw launch inclination

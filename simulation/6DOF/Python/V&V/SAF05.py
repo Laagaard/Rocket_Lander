@@ -5,13 +5,22 @@ from rocketpy import Flight
 import sys
 sys.path.append("../")
 from setup import DART_rocket, launch_site, launch_rail_length
-from SYS09 import optimal_heading, optimal_inclination
-from SYS10 import abort_counts, main_parachute
+from SYS10 import C_D, parachute_reference_area
 
 SAF05_velocity_threshold = -8 # [m/s] maximum descent velocity under parachute permitted by requirement SAF.05
 
-launch_inclination = optimal_inclination + 2 # [deg] launch inclination
-launch_heading = optimal_heading + 2 # [deg] launch heading, measured CW from North
+launch_inclination = 85 # [deg] launch inclination
+launch_heading = 30 # [deg] launch heading, measured CW from North
+
+# Construct Parachute
+main_parachute = DART_rocket.add_parachute(
+    name="main", # name of the parachute (no impact on simulation)
+    cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
+    trigger="apogee", # "apogee" acceptable for SAF.05 verification, but must be trigger function for SYS.10
+    sampling_rate=10, # [Hz] sampling rate in which the trigger function works (used to simulate sensor refresh rates)
+    lag=0, # [s] time between the ejection system is triggered and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
+    noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
+)
 
 test_flight = Flight(
     rocket=DART_rocket,
