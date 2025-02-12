@@ -78,7 +78,7 @@ if __name__ == "__main__":
     plt.savefig(f"{figures_output_dir}/dnt_trajectories.png", transparent=True, dpi=1000) # save the figure with a transparent background
 
     if (not automation_flag):
-        plt.show()
         print(f"\n---------- SIMULATION RESULTS ----------")
         print(f"Trajectories Attempted: {number_of_perimeter_points}")
         print(f"Trajectories Used: {iteration_counter}\n")
+        plt.show()

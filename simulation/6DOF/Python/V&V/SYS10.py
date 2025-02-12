@@ -11,7 +11,6 @@ from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
 from setup import all_landing_zone_perimeters, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site
-from SYS09 import check_dnt, dnt_x_1s, dnt_x_2s, dnt_y_1s, dnt_y_2s, launch_area_ax, optimal_heading, optimal_inclination
 
 def parachute_trigger(p, h, y):
     '''
@@ -68,20 +67,12 @@ def parachute_trigger(p, h, y):
     else:
         return False # do not deploy the parachute
 
-optimal_landing_zone_df = pd.read_csv(f"../DNT/{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
-optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter
-
-ellipse = EllipseModel()
-if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
-    landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
-    launch_area_ax.add_patch(landing_zone_patch)
-
 # Parachute Characteristics
 C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
 
 # Construct Parachute
-main = DART_rocket.add_parachute(
+main_parachute = DART_rocket.add_parachute(
     name="main", # name of the parachute (no impact on simulation)
     cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
     trigger=parachute_trigger,
@@ -90,33 +81,45 @@ main = DART_rocket.add_parachute(
     noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
 )
 
-num_trajectories = 50 # number of trajectories to simulate
-for elem in range(num_trajectories):
-    launch_inclination = np.random.uniform(low=optimal_inclination - 1, high=optimal_inclination + 1) # [deg] randomly draw launch inclination
-    launch_heading = np.random.uniform(low=optimal_heading - 1, high=optimal_heading + 1) # [deg] randomly draw launch heading
-    print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
+abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
 
-    abort_counts = 0 # counter to track the number of trajectory positions that exited the DNT
-    test_flight = Flight(
-        rocket=DART_rocket,
-        environment=launch_site,
-        rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
-        inclination=launch_inclination, # [deg] rail inclination relative to the ground
-        heading=launch_heading, # [deg] heading angle relative to North (East = 90)
-        time_overshoot=False # if True, decouples ODE time step from parachute trigger functions sampling rate
-    ) # run trajectory simulation
+if (__name__ == "__main__"):
+    from SYS09 import check_dnt, dnt_x_1s, dnt_x_2s, dnt_y_1s, dnt_y_2s, launch_area_ax, optimal_heading, optimal_inclination
 
-    if (len(test_flight.parachute_events) >= 1): # if the parachute deployed (i.e., an abort was triggered)
-        abort_color = 'r'
-    else:
-        abort_color = 'g'
+    optimal_landing_zone_df = pd.read_csv(f"../DNT/{date_dir_with_time}/optimal_landing_zone.csv") # df of optimal landing zone information
+    optimal_perimeter_coords = all_landing_zone_perimeters[optimal_landing_zone_df["index"][0]] # coordinates of optimal landing zone perimeter 
 
-    solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
-    launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
+    ellipse = EllipseModel()
+    if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
+        landing_zone_patch = Ellipse(xy=(ellipse.params[0], ellipse.params[1]), width=2*ellipse.params[2], height=2*ellipse.params[3], angle=math.degrees(ellipse.params[4]), edgecolor='r', facecolor="None")
+        launch_area_ax.add_patch(landing_zone_patch)
 
-launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
-launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
-launch_area_ax.set_title("SYS.10 Verification")
-plt.tight_layout()
-plt.savefig(f"SYS10_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
-plt.show()
+    num_trajectories = 50 # number of trajectories to simulate
+    for elem in range(num_trajectories):
+        launch_inclination = np.random.uniform(low=optimal_inclination - 1, high=optimal_inclination + 1) # [deg] randomly draw launch inclination
+        launch_heading = np.random.uniform(low=optimal_heading - 1, high=optimal_heading + 1) # [deg] randomly draw launch heading
+        print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
+
+        test_flight = Flight(
+            rocket=DART_rocket,
+            environment=launch_site,
+            rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
+            inclination=launch_inclination, # [deg] rail inclination relative to the ground
+            heading=launch_heading, # [deg] heading angle relative to North (East = 90)
+            time_overshoot=False # if True, decouples ODE time step from parachute trigger functions sampling rate
+        ) # run trajectory simulation
+
+        if (len(test_flight.parachute_events) >= 1): # if the parachute deployed (i.e., an abort was triggered)
+            abort_color = 'r'
+        else:
+            abort_color = 'g'
+
+        solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
+        launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), color=abort_color)
+
+    launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
+    launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
+    launch_area_ax.set_title("SYS.10 Verification")
+    plt.tight_layout()
+    plt.savefig(f"SYS10_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background
+    plt.show()
