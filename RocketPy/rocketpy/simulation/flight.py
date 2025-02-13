@@ -498,7 +498,6 @@ class Flight:
         the freestream velocity vector. Can be called or accessed as
         array.
     """
-
     def __init__(  # pylint: disable=too-many-arguments,too-many-statements
         self,
         rocket,
@@ -1723,7 +1722,7 @@ class Flight:
         """Calculates derivative of u state vector with respect to time when the
         rocket is flying in 6 DOF motion in space and significant mass variation
         effects exist. Typical flight phases include powered ascent after launch
-        rail.
+        rail, and powered descent with or without TVC.
 
         Parameters
         ----------
@@ -1855,46 +1854,42 @@ class Flight:
             M2 += N
             M3 += L
 
-        # Off center moment
+        # Off-center moment
         thrust = self.rocket.motor.thrust.get_value_opt(t)
-        M1 += (
-            self.rocket.cp_eccentricity_y * R3
-            + self.rocket.thrust_eccentricity_x * thrust
-        )
-        M2 -= (
-            self.rocket.cp_eccentricity_x * R3
-            - self.rocket.thrust_eccentricity_y * thrust
-        )
+
+        # Check if TVC is active, similar to airbrakes
+        if self.rocket.TVC is not None:
+            thrust_vector = self.rocket.TVC.get_thrust_vector(thrust)
+            thrust_torque = self.rocket.TVC.get_torque(thrust, self.rocket.TVC.attachment_point)
+        else:
+            thrust_vector = Vector([0, 0, thrust])  # Default thrust along +Z
+            thrust_torque = Vector([0, 0, 0])  
+
+        M1 += self.rocket.cp_eccentricity_y * R3
+        M2 -= self.rocket.cp_eccentricity_x * R3
         M3 += self.rocket.cp_eccentricity_x * R2 - self.rocket.cp_eccentricity_y * R1
 
-        weight_in_body_frame = Kt @ Vector(
-            [0, 0, -total_mass * self.env.gravity.get_value_opt(z)]
-        )
+        # Apply TVC torque correction
+        M1 += thrust_torque[0]
+        M2 += thrust_torque[1]
+        M3 += thrust_torque[2]
 
-        T00 = total_mass * r_CM
-        T03 = 2 * total_mass_dot * (r_NOZ - r_CM) - 2 * total_mass * r_CM_dot
+        weight_in_body_frame = Kt @ Vector([0, 0, -total_mass * self.env.gravity.get_value_opt(z)])
+
+        # --- Compute Translational Forces ---
+        T00 = total_mass * r_CM  # Mass distribution effects
+        T03 = 2 * total_mass_dot * (r_NOZ - r_CM) - 2 * total_mass * r_CM_dot  # Mass flow effects
         T04 = (
-            Vector([0, 0, thrust])
+            thrust_vector
             - total_mass * r_CM_ddot
             - 2 * total_mass_dot * r_CM_dot
             + total_mass_ddot * (r_NOZ - r_CM)
-        )
-        T05 = total_mass_dot * S_nozzle - I_dot
+        )  # Acceleration due to thrust
+        T05 = total_mass_dot * S_nozzle - I_dot  # Nozzle motion & inertia tensor effects
 
-        T20 = (
-            ((w ^ T00) ^ w)
-            + (w ^ T03)
-            + T04
-            + weight_in_body_frame
-            + Vector([R1, R2, R3])
-        )
-
-        T21 = (
-            ((inertia_tensor @ w) ^ w)
-            + T05 @ w
-            - (weight_in_body_frame ^ r_CM)
-            + Vector([M1, M2, M3])
-        )
+        # --- Compute Net Forces & Moments ---
+        T20 = ((w ^ T00) ^ w) + (w ^ T03) + T04 + weight_in_body_frame + Vector([R1, R2, R3])
+        T21 = ((inertia_tensor @ w) ^ w) + T05 @ w - (weight_in_body_frame ^ r_CM) + Vector([M1, M2, M3])
 
         # Angular velocity derivative
         w_dot = I_CM.inverse @ (T21 + (T20 ^ r_CM))
