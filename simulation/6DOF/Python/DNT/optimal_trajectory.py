@@ -8,7 +8,7 @@ import pandas as pd
 from rocketpy import Flight
 import sys
 sys.path.append("../")
-from setup import automation_flag, DART_rocket, date_dir_date_only, date_dir_with_time, date_string_date_only, date_string_with_time, launch_rail_length, launch_site
+from setup import automation_flag, DART_rocket_1, date_dir_date_only, date_dir_with_time, date_string_date_only, date_string_with_time, launch_rail_length, launch_site
 
 trajectory_dataset_df = pd.read_csv(f"{date_dir_with_time}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 optimal_landing_zone_df = pd.read_csv(f"{date_dir_with_time}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # Simulate the Flight with Optimal Launch Parameters
     test_flight = Flight(
-        rocket=DART_rocket,
+        rocket=DART_rocket_1,
         environment=launch_site,
         rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
         inclination=optimal_inclination, # [deg] rail inclination relative to the ground
