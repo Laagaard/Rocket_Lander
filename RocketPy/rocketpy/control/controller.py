@@ -1,5 +1,6 @@
 from inspect import signature
-
+import numpy as np
+from scipy.linalg import solve_continuous_are
 from ..prints.controller_prints import _ControllerPrints
 
 
@@ -182,3 +183,160 @@ class _Controller:
     def all_info(self):
         """Prints out all information about the controller."""
         self.info()
+
+
+# --- LQR Controller Functions ---
+
+def get_state_matrices(Ix, Iy, Iz, mass, altitude, dt):
+    """
+    Compute system matrices A and B for LQR control.
+    
+    Parameters
+    ----------
+    Ix, Iy, Iz : float
+        Principal moments of inertia (kg·m²).
+    mass : float
+        Rocket mass (kg).
+    altitude : float
+        Rocket altitude (m).
+    dt : float
+        Sampling time step (s).
+    
+    Returns
+    -------
+    A, B : np.array
+        State-space matrices.
+    """
+
+    A = np.array([
+        [0, 0, 0],  # Vertical velocity dynamics
+        [0, 0, 0],  # Horizontal velocity dynamics
+        [0, 0, 0]   # Attitude dynamics
+    ])
+
+    B = np.array([
+        [1/mass, 0],    # Control input affects vertical acceleration
+        [0, 1/mass],    # Control input affects horizontal acceleration
+        [1/Ix, 1/Iy]    # Control input affects attitude (simplified model)
+    ])
+
+    return A, B
+
+
+def lqr(A, B, Q, R):
+    """
+    Solve the Algebraic Riccati Equation (ARE) for optimal control gain matrix K.
+
+    Parameters
+    ----------
+    A : np.array
+        System state matrix.
+    B : np.array
+        Control input matrix.
+    Q : np.array
+        State cost matrix.
+    R : np.array
+        Control cost matrix.
+
+    Returns
+    -------
+    K : np.array
+        Optimal LQR gain matrix.
+    """
+
+    P = solve_continuous_are(A, B, Q, R)
+    K = np.linalg.inv(R) @ B.T @ P
+    return K
+
+
+def get_attitude(state_vector):
+    """
+    Compute tilt angle from quaternions.
+
+    Parameters
+    ----------
+    state_vector : list
+        Rocket state vector containing quaternions.
+
+    Returns
+    -------
+    tilt_angle : float
+        Tilt angle (rad) relative to vertical.
+    """
+
+    e0, e1, e2, e3 = state_vector[6:10]  # Extract quaternions
+    tilt_angle = np.arccos(2 * (e0**2 + e3**2) - 1)  # Compute tilt from quaternion
+    return tilt_angle
+
+
+def tvc_lqr_controller(time, dt, state_vector, state_history, observed_variables, interactive_objects, sensors):
+    """
+    LQR Controller for Thrust Vector Control (TVC) system.
+
+    Parameters
+    ----------
+    time : float
+        Current simulation time (s).
+    dt : float
+        Simulation time step (s).
+    state_vector : list
+        Rocket state [x, y, z, vx, vy, vz, e0, e1, e2, e3, wx, wy, wz].
+    state_history : list
+        History of previous state vectors.
+    observed_variables : list
+        Controller-observed variables for logging.
+    interactive_objects : list
+        List of objects that the controller can modify.
+    sensors : list
+        List of sensors providing real-time data.
+
+    Returns
+    -------
+    list
+        Updated observed variables (pitch_command, yaw_command).
+    """
+
+    # Extract TVC system and Rocket objects
+    tvc_system = interactive_objects[0]
+    rocket = interactive_objects[1]
+
+    # Extract relevant state variables
+    vz = state_vector[5]  # Vertical velocity
+    vh = np.sqrt(state_vector[3]**2 + state_vector[4]**2)  # Horizontal velocity
+    attitude = get_attitude(state_vector)  # Compute rocket tilt angle
+
+    # Define current state vector
+    x = np.array([vz, vh, attitude])
+
+    # Define reference state (Target: zero velocity & upright)
+    x_ref = np.array([0.0, 0.0, 0.0])  # [vz_target, vh_target, attitude_target]
+
+    # Compute state error
+    x_error = x - x_ref
+
+    # Retrieve Rocket properties
+    inertia_tensor = rocket.get_inertia_tensor_at_time(time)
+    Ix, Iy, Iz = inertia_tensor.diagonal()
+    mass = rocket.total_mass.get_value_opt(time)
+    altitude = state_vector[2]
+
+    # Compute system matrices A and B
+    A, B = get_state_matrices(Ix, Iy, Iz, mass, altitude, dt)
+
+    # Define LQR cost matrices
+    Q = np.diag([100, 100, 10])  # Penalize velocity and attitude errors
+    R = np.diag([1, 1])  # Penalize gimbal movement
+
+    # Compute optimal control gains
+    K = lqr(A, B, Q, R)
+    u = -K @ x_error  # Compute optimal control input (based on error)
+
+    # Apply TVC constraints (limit gimbal angles)
+    pitch_command = np.clip(u[0], -tvc_system.max_gimbal, tvc_system.max_gimbal)
+    yaw_command = np.clip(u[1], -tvc_system.max_gimbal, tvc_system.max_gimbal)
+
+    # Update TVC system with new gimbal angles
+    tvc_system.update_gimbal(pitch_command, yaw_command, dt)
+
+    # Return updated observed variables
+    return [pitch_command, yaw_command]
