@@ -24,10 +24,6 @@ if __name__ == "__main__":
         shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
     os.mkdir(CSV_output_dir) # Create folder for all DNT trajectories
 
-    if os.path.exists(CSV_output_dir):
-        shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(CSV_output_dir) # Create folder for CSV files of DNT simulation data
-
     optimal_trajectory_df = pd.read_csv(f"{date_dir_with_time}/optimal_trajectory.csv") # df of optimal trajectory data
 
     # Plot DNT Impact Locations

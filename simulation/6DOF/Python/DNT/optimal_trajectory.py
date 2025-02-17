@@ -4,11 +4,12 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
+import os
 import pandas as pd
 from rocketpy import Flight
 import sys
 sys.path.append("../")
-from setup import automation_flag, DART_rocket_1, date_dir_date_only, date_dir_with_time, date_string_date_only, date_string_with_time, launch_rail_length, launch_site
+from setup import automation_flag, DART_rocket_1, date_dir_date_only, date_dir_with_time, date_format_string_with_time, date_string_date_only, date_string_with_time, launch_rail_length, launch_site
 
 trajectory_dataset_df = pd.read_csv(f"{date_dir_with_time}/trajectory_dataset.csv") # read trajectory dataset into pandas (pd) dataframe (df)
 optimal_landing_zone_df = pd.read_csv(f"{date_dir_with_time}/optimal_landing_zone.csv") # read optimal landing zone information into dataframe
@@ -50,11 +51,18 @@ if __name__ == "__main__":
 
     horz_vel = math.sqrt(test_flight.vx(solution_time)[-1]**2 + test_flight.vy(solution_time)[-1]**2) # [m/s] inertial horizontal velocity at impact
     vert_vel = test_flight.vz(solution_time)[-1] # [m/s] inertial vertical velocity at impact
-    final_angle = math.degrees(math.atan2(vert_vel, horz_vel)) # [deg] inclination (angle relative to vertical) at impact
+    final_angle = math.degrees(math.atan2(vert_vel, horz_vel)) # [deg] attitude angle (angle relative to horizontal) at impact
 
-    launch_information_file = open(f"{date_dir_date_only}/{date_string_date_only}.csv", 'w', newline="")
+    launch_information_file_path = f"{date_dir_date_only}/{date_string_date_only}.csv" # path to the CSV file containing launch information of each time for a given date
+    if (not os.path.exists(launch_information_file_path)): # if the launch information file does not exist
+        write_header = True # flag indicating header row needs to be written
+    else:
+        write_header = False
+    
+    launch_information_file = open(launch_information_file_path, 'a', newline="")
     launch_information_writer = csv.writer(launch_information_file) # CSV writer for output file containing optimal trajectory launch information
-    launch_information_writer.writerow(launch_information_header) # write header row of output CSV file containing optimal trajectory launch information
+    if (write_header):
+        launch_information_writer.writerow(launch_information_header) # write header row of output CSV file containing optimal trajectory launch information
     launch_information_writer.writerow([date_string_with_time, np.round(optimal_inclination, 2), np.round(optimal_heading, 2), landing_zone_number, np.round(final_angle, 2)])
     launch_information_file.close()
 
@@ -71,8 +79,8 @@ if __name__ == "__main__":
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
     launch_area_ax.set_title(f"Optimal Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")
     plt.tight_layout()
-    print(f"{date_string_with_time}, Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg, LZ: {landing_zone_number}, Impact Angle: {np.round(final_angle, 2)} deg")
     plt.savefig(f"{figures_output_dir}/optimal_trajectory.png", transparent=True, dpi=1000) # save the figure with a transparent background
+    print(f"{launch_site.local_date.strftime(date_format_string_with_time)}, Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg, LZ: {landing_zone_number}, Impact Angle: {np.round(final_angle, 2)} deg")
 
     if (not automation_flag): # if the script is being run manually
         plt.show()

@@ -17,16 +17,21 @@ figures_output_dir = f"{date_dir_with_time}/figures" # output directory for matp
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     if os.path.exists(date_dir_date_only):
-        shutil.rmtree(date_dir_date_only, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(date_dir_date_only) # Create folder for all results for the given date
+        None # shutil.rmtree(date_dir_date_only, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    else:
+        os.mkdir(date_dir_date_only) # Create folder for all results for the given date
 
     if os.path.exists(date_dir_with_time):
-        shutil.rmtree(date_dir_with_time, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(date_dir_with_time) # Create folder for all results for the given date/time
+        None # shutil.rmtree(date_dir_with_time, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    else:
+        os.mkdir(date_dir_with_time) # Create folder for all results for the given date/time
 
     if os.path.exists(figures_output_dir):
-        shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
-    os.mkdir(figures_output_dir) # Create folder for all results for the given date/time
+        None # shutil.rmtree(figures_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
+    else:
+        os.mkdir(figures_output_dir) # Create folder for all results for the given date/time
+
+    print(f"Weather Model: {launch_site.atmospheric_model_type}") # TODO, this doesn't give the desired output
 
     # CSV Output File
     trajectory_dataset_output_file_header = ["Inclination", "Heading", "longitude", "latitude"] # header of output CSV file containing trajectory information

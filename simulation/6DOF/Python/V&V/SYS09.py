@@ -8,7 +8,7 @@ from rocketpy import Flight
 from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
-from setup import command_line_args, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
+from setup import command_line_args, DART_rocket_1, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
 
 def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
@@ -36,9 +36,6 @@ def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, curr
     dnt_x_2s = dnt_points_df["x_2"].tolist() # list of longitude coordinates of the DNT right boundary
     dnt_y_2s = dnt_points_df["y_2"].tolist() # list of latitude coordinates of the DNT right boundary
 
-    dnt_average_longs = [] # list to track the average longitude coordinate of each DNT discretization
-    dnt_average_lats = [] # list to track the average latitude coordinate of each DNT discretization
-
     positive_time = list(filter(lambda time: time > 0, dnt_ts)) # list of DNT time steps greater than 0
     if (not current_time >= min(positive_time)): # if the current time is not greater than or equal to the first positive DNT time step
         abort_counts = 0 # reset the abort counter
@@ -50,11 +47,6 @@ def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, curr
     check_4s = [] # list to track all `check_4` booleans
 
     for idx in range(len(dnt_x_1s) - 1):
-        new_longitude_average = (dnt_x_1s[idx] + dnt_x_1s[idx + 1] + dnt_x_2s[idx] + dnt_x_2s[idx + 1])/4 # average longitude coordinate of all boundary coordinates applicable to the discretization
-        dnt_average_longs.append(new_longitude_average)
-        new_latitude_average = (dnt_y_1s[idx] + dnt_y_1s[idx + 1] + dnt_y_2s[idx] + dnt_y_2s[idx + 1])/4 # average latitude coordinate of all boundary coordinates applicable to the discretization
-        dnt_average_lats.append(new_latitude_average)
-
         left_x_1 = dnt_x_1s[idx] # first left DNT boundary point x-coordinate
         left_y_1 = dnt_y_1s[idx] # first left DNT boundary point y-coordinate
         left_x_2 = dnt_x_1s[idx + 1] # second left DNT boundary point x-coordinate
@@ -249,7 +241,7 @@ if __name__ == "__main__":
         print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
         test_flight = Flight(
-            rocket=DART_rocket,
+            rocket=DART_rocket_1,
             environment=launch_site,
             rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
             inclination=launch_inclination, # [deg] rail inclination relative to the ground

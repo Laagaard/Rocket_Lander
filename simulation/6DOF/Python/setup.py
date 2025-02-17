@@ -18,7 +18,11 @@ def remove_readonly(func, path, excinfo):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-results_dir = "Results"
+# Run if the script is executed directly (i.e., not called from another file)
+if (__name__ == "__main__"):
+    results_dir = "DNT/Results" # force the results into the `DNT` directory
+else:
+    results_dir = "../DNT/Results" # TODO, not a robust solution (only works from a directory one level higher)
 
 if os.path.exists(results_dir): # If the results directory already exists
     None
@@ -77,7 +81,7 @@ launch_site = Environment(
     latitude=launch_site_latitude, # [deg] positive corresponds to North
     longitude=launch_site_longitude, # [deg] positive corresponds to East
     elevation=4, # [m] launch site elevation above sea level
-    timezone="EST", # specify launch site time zone (# TODO, see if this fixed the time issues with the automatic runner)
+    timezone="EST", # specify launch site time zone
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
 
@@ -111,13 +115,14 @@ match (command_line_args["location"]):
         landing_zone_longs = landing_zone_longs_ROAR # [deg]
 
 # String Formatting Based on Launch Date and Time (for organization of results)
-date_format_string_date_only = "%m-%d-%Y"
-date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only)
-date_dir_date_only = f"{results_dir}/{date_string_date_only}"
-date_format_string_time_only = "%H"
-date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only)
-date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}"
-date_string_with_time = f"{date_string_date_only}-{date_string_time_only}"
+date_format_string_date_only = "%m-%d-%Y" # (str) formatting string for use with `datetime` objects
+date_string_date_only = launch_site.local_date.strftime(date_format_string_date_only) # (str) formatted launch site date
+date_dir_date_only = f"{results_dir}/{date_string_date_only}" # (str) directory to contain all results pertinent to the date
+date_format_string_time_only = "%H" # (str) formatting string to use with `datetime` objects
+date_string_time_only = launch_site.local_date.strftime(date_format_string_time_only) # (str) formatted launch site time
+date_dir_with_time = f"{date_dir_date_only}/{date_string_time_only}" # (str) directory to contain all results pertinent to the date & time combination
+date_format_string_with_time = f"{date_format_string_date_only}-{date_format_string_time_only}" # (str) formatting string for use with `datetime` objects
+date_string_with_time = f"{date_string_date_only}-{date_string_time_only}" # (str) formatted launch site date and time
 
 '''
 -------------------- Add Forecast (i.e., Wind) Information --------------------
@@ -141,13 +146,17 @@ except (ValueError): # ValueError thrown when "Chosen launch time is not availab
                 launch_site.set_atmospheric_model(type="standard_atmosphere") # will default to the ISA (no wind)
                 print("Weather Model: ISA (NO WIND)")
             else:
-                print("Weather Model: GEFS")
+                if (__name__ == "__main__"):
+                    print("Weather Model: GEFS")
         else:
-            print("Weather Model: GFS")
+            if (__name__ == "__main__"):
+                print("Weather Model: GFS")
     else:
-        print("Weather Model: NAM")
+        if (__name__ == "__main"):
+            print("Weather Model: NAM")
 else:
-    print("Weather Model: RAP")
+    if (__name__ == "__main__"):
+        print("Weather Model: RAP")
 
 # Run if the script is executed directly (i.e., not called from another file)
 if __name__ == "__main__":
@@ -326,9 +335,8 @@ position: [m] Nose cone tip coordinate relative to the rocket's coordinate syste
 DART_nose = NoseCone(
     length=0.145836, # [m] (# TODO, check against CAD)
     kind="ogive",
-    base_radius=DART_rocket_1.radius, # [m] nose cone base radius
-    bluffness=0.6/1.5 # ratio between the radius of the circle on the tip of the ogive and the radius of the base of the ogive (will truncate the length if less than 1)
-)
+    base_radius=DART_rocket_1.radius # [m] nose cone base radius
+) # `bluffness` not included since `RocketPy` currently only uses it for drawing the rocket
 
 '''
 -------------------- Add Rail Buttons to Rocket 1 --------------------
