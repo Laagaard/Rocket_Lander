@@ -100,3 +100,25 @@ Final (Calculated) Length Options:
 - Distance between the Lower Rail Button and the Top of the Rail: 1.335 [m], 52.545 [in] (accounting for L-bracket hardstop)
 '''
 launch_rail_length = 1.131 # [m]
+
+DART_rocket_1.TVC = None  # Explicitly disable TVC for Rocket 1
+
+ENABLE_TVC = False  # This will be modified in flight script
+
+# Initialize TVC System
+if ENABLE_TVC:
+    tvc_system = TVC(max_gimbal=10, servo_rate=375)
+    DART_rocket_2.TVC = tvc_system  # Attach TVC to descent rocket
+else:
+    DART_rocket_2.TVC = None  # Disable TVC if not used
+
+# --- LQR Controller Setup ---
+if ENABLE_TVC:
+    sampling_rate = 50  # Hz
+    controller = _Controller(
+        interactive_objects=[DART_rocket_2.TVC, DART_rocket_2],
+        controller_function= controller.tvc_lqr_controller,
+        sampling_rate=sampling_rate,
+        name="LQR Controller"
+    )
+    DART_rocket_2.controller = controller  # Attach controller to the rocket
