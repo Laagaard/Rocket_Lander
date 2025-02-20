@@ -47,8 +47,8 @@ trajectory_ax.plot(lateral_displacement[apogee_index], apogee_altitude, 'g.', ma
 trajectory_ax.text(0, PROP04_altitude_threshold, s=f"{PROP04_altitude_threshold}", color="green", transform=vertical_trans, ha="right", va="top") # add text on vertical axis of PROP.04 threshold
 
 horizontal_trans = transforms.blended_transform_factory(trajectory_ax.transData, trajectory_ax.get_xticklabels()[0].get_transform())
-trajectory_ax.axvline(x=PROP05_lateral_displacement_threshold, color='b', linestyle='--') # plot vertical line at PROP.05 threshold
-trajectory_ax.plot(lateral_displacement[-1], test_flight.altitude(solution_time[-1]), 'b.', markersize=10) # plot marker at trajectory impact point
+trajectory_ax.axvline(x=PROP05_lateral_displacement_threshold, color='g', linestyle='--') # plot vertical line at PROP.05 threshold
+trajectory_ax.plot(lateral_displacement[-1], test_flight.altitude(solution_time[-1]), 'g.', markersize=10) # plot marker at trajectory impact point
 trajectory_ax.text(PROP05_lateral_displacement_threshold, 0, s=f"{PROP05_lateral_displacement_threshold}", color="blue", transform=horizontal_trans, ha="center", va="top")
 
 trajectory_ax.set_xlabel("Lateral Displacement [m]")

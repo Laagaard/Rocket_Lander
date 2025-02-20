@@ -28,7 +28,7 @@ else:
 command_line_args = {
   "date": "",
   "time": "",
-  "location": "",
+  "location": "independent", # default location corresponds to launching independently in the Compound (at the SRA launch location)
   "automated": False # default value indicates the script is being run manually
 } # dictionary of recognized command line arguments
 

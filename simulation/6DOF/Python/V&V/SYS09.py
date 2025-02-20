@@ -8,7 +8,7 @@ from rocketpy import Flight
 from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
-from setup import command_line_args, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
+from setup import command_line_args, DART_rocket_1, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site, all_landing_zone_perimeters
 
 def check_dnt(DNT_FILE_PATH: str, current_time: float, current_long: float, current_lat: float, abort_counts: int, abort_count_threshold = 3):
     '''
@@ -249,7 +249,7 @@ if __name__ == "__main__":
         print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
         test_flight = Flight(
-            rocket=DART_rocket,
+            rocket=DART_rocket_1,
             environment=launch_site,
             rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
             inclination=launch_inclination, # [deg] rail inclination relative to the ground

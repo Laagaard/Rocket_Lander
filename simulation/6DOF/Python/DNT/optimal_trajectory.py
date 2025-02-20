@@ -48,9 +48,7 @@ if __name__ == "__main__":
 
     solution_time = [solution_step[0] for solution_step in test_flight.solution] # [s] time array of solution
 
-    horz_vel = math.sqrt(test_flight.vx(solution_time)[-1]**2 + test_flight.vy(solution_time)[-1]**2) # [m/s] inertial horizontal velocity at impact
-    vert_vel = test_flight.vz(solution_time)[-1] # [m/s] inertial vertical velocity at impact
-    final_angle = math.degrees(math.atan2(vert_vel, horz_vel)) # [deg] inclination (angle relative to vertical) at impact
+    final_angle = test_flight.attitude_angle(solution_time[-1]) # [deg] inclination (angle relative to vertical) at impact
 
     launch_information_file = open(f"{date_dir_date_only}/{date_string_date_only}.csv", 'w', newline="")
     launch_information_writer = csv.writer(launch_information_file) # CSV writer for output file containing optimal trajectory launch information
