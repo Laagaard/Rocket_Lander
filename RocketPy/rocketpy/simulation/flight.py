@@ -1860,7 +1860,7 @@ class Flight:
         # Check if TVC is active, similar to airbrakes
         if self.rocket.TVC is not None:
             thrust_vector = self.rocket.TVC.get_thrust_vector(thrust)
-            thrust_torque = self.rocket.TVC.get_torque(thrust, self.rocket.TVC.attachment_point)
+            thrust_torque = self.rocket.TVC.get_torque(thrust, Vector([0, 0, self.rocket.motor.nozzle_position]))
         else:
             thrust_vector = Vector([0, 0, thrust])  # Default thrust along +Z
             thrust_torque = Vector([0, 0, 0])  
