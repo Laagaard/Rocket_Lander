@@ -74,9 +74,6 @@ if index_fire is not None:
     q2 = test_flight.e2(time[index_fire])
     q3 = test_flight.e3(time[index_fire])
 
-    q = [q0, q1, q2, q3]  # Initial Descent Quaternion
-    q_rot = [0, 0, 1, 0]  # Flip Quaternion
-
     q_flipped = [-q2, -q3, q0, q1]  # Flipped quaternion
 
     # --- Enable TVC for Descent Rocket ---
@@ -101,21 +98,16 @@ if index_fire is not None:
         test_flight.w3(time[index_fire])   # Angular velocity w3
     ]
 
+    # Attach TVC system
     DART_rocket_2 = setup.DART_rocket_2
-
-    # Initialize TVC System
-    if ENABLE_TVC:
-        tvc_system = TVC(max_gimbal=10, servo_rate=375)
-        DART_rocket_2.TVC = tvc_system  # Attach TVC to descent rocket
-    else:
-        DART_rocket_2.TVC = None  # Disable TVC if not used
+    tvc_system = TVC(max_gimbal=10, servo_rate=375)
+    DART_rocket_2.add_TVC(tvc_system)
 
     # --- LQR Controller Setup ---
-    if ENABLE_TVC is True:
-        sampling_rate = 10  # Hz
-        controller = _Controller(
+    sampling_rate = 10  # Hz
+    controller = _Controller(
         interactive_objects=[DART_rocket_2.TVC, DART_rocket_2],
-        controller_function=_Controller.tvc_lqr_controller,  # Bind to instance
+        controller_function=_Controller.tvc_lqr_controller,
         sampling_rate=sampling_rate,
         initial_observed_variables=None,
         name="LQR Controller"
@@ -125,33 +117,29 @@ if index_fire is not None:
 
     # Create the descent flight
     descent_flight = Flight(
-        rocket=setup.DART_rocket_2,  # Use Rocket 2 (Descent)
+        rocket=DART_rocket_2,
         environment=setup.launch_site,
-        inclination=0,  # Use inclination from ascent phase
         rail_length=0.1,
-        heading=0,
-        initial_solution=initial_solution,  # Use complete state vector
+        initial_solution=initial_solution,
         time_overshoot=True
     )
 
     # Plot the 3D trajectory
     descent_flight.plots.trajectory_3d()
     descent_flight.plots.linear_kinematics_data()
-    descent_flight.plots.attitude_data()
-    setup.AeroTechG25W.all_info()
 
     # --- Plot TVC Gimbal Angles Over Time ---
     history = tvc_system.get_gimbal_history()
-if history:
-    time_data, pitch_data, yaw_data = zip(*history)
-    plt.figure(figsize=(10, 5))
-    plt.plot(time_data, np.degrees(pitch_data), label="Pitch Gimbal Angle", color='b')
-    plt.plot(time_data, np.degrees(yaw_data), label="Yaw Gimbal Angle", color='r')
-    plt.xlabel("Time (s)")
-    plt.ylabel("Gimbal Angle (degrees)")
-    plt.title("Commanded Gimbal Angles Over Time")
-    plt.legend()
-    plt.grid()
-    plt.show()
-else:
-    print("No gimbal commands were recorded.")
+    if history:
+        time_data, pitch_data, yaw_data = zip(*history)
+        plt.figure(figsize=(10, 5))
+        plt.plot(time_data, np.degrees(pitch_data), label="Pitch Gimbal Angle", color='b')
+        plt.plot(time_data, np.degrees(yaw_data), label="Yaw Gimbal Angle", color='r')
+        plt.xlabel("Time (s)")
+        plt.ylabel("Gimbal Angle (degrees)")
+        plt.title("Commanded Gimbal Angles Over Time")
+        plt.legend()
+        plt.grid()
+        plt.show()
+    else:
+        print("No gimbal commands were recorded.")
