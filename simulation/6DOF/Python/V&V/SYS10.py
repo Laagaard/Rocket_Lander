@@ -10,7 +10,7 @@ from rocketpy import Flight
 from skimage.measure import EllipseModel
 import sys
 sys.path.append("../")
-from setup import all_landing_zone_perimeters, DART_rocket, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site
+from setup import all_landing_zone_perimeters, DART_rocket_1, date_dir_with_time, launch_area_ax, launch_rail_length, launch_site
 
 def parachute_trigger(p, h, y):
     '''
@@ -72,7 +72,7 @@ C_D = 0.84 # [unitless] parachute drag coefficient
 parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
 
 # Construct Parachute
-main_parachute = DART_rocket.add_parachute(
+main_parachute = DART_rocket_1.add_parachute(
     name="main", # name of the parachute (no impact on simulation)
     cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
     trigger=parachute_trigger,
@@ -101,7 +101,7 @@ if (__name__ == "__main__"):
         print(f"Iteration: {elem}, Inclination: {round(launch_inclination, 2)} deg, Heading: {round(launch_heading, 2)} deg")
 
         test_flight = Flight(
-            rocket=DART_rocket,
+            rocket=DART_rocket_1,
             environment=launch_site,
             rail_length=launch_rail_length, # [m] length in which the rocket will be attached to the launch rail
             inclination=launch_inclination, # [deg] rail inclination relative to the ground
