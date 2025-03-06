@@ -288,7 +288,7 @@ if __name__ == "__main__":
 
     launch_area_ax.plot(dnt_x_1s, dnt_y_1s, 'b.-', markersize=1) # plot left boundary line segments
     launch_area_ax.plot(dnt_x_2s, dnt_y_2s, 'b.-', markersize=1) # plot right boundary line segments
-    launch_area_ax.set_title(f"SYS.09 Verification")
+    launch_area_ax.set_title(f"DNT Departure Detection")
 
     plt.tight_layout()
     plt.savefig(f"SYS09_Verification.png", transparent=True, dpi=1000) # save the figure with a transparent background

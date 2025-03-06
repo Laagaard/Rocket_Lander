@@ -110,7 +110,7 @@ if __name__ == "__main__":
         optimal_landing_zone_writer.writerow(["None", "None", "None"])
     optimal_landing_zone_output_file.close()
 
-    launch_area_ax.set_title(f"Trajectory & Landing Zone \n(Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
+    launch_area_ax.set_title(f"Impact Area Ground Coverage \n(Minimum Inclination: {round(test_flight.inclination, 2)} deg)") # add graph title
     plt.tight_layout()
     plt.savefig(f"{figures_output_dir}/impact_area.png", transparent=True, dpi=1000) # save the figure with a transparent background
 

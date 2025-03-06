@@ -18,12 +18,12 @@ function Parameters_Rocket
     P0 = 0; % (rad/s)
     Q0 = 0; % (rad/s)
     R0 = 0; % (rad/s)
-    m0 = 1.50; % (kg)
-    I_xx0 = 0.004784; % (kg*m^2) longitudinal axis
-    I_yy0 = 0.273645; % (kg*m^2) 
-    I_zz0 = 0.273654; % (kg*m^2)
-    C_G0 = 0.4; % [m] initial CG location (measured from tip of nose) TOTALLY WRONG AND NEEDS TO BE CHANGED (JUST A PLACEHOLDER)
-    C_P0 = 0.656; % [m] initial CP location (measured from tip of nose)
+    m0 = 1.43496; % (kg)
+    I_xx0 = 0.001703419; % (kg*m^2) longitudinal axis
+    I_yy0 = 0.046172709; % (kg*m^2) 
+    I_zz0 = 0.046138602; % (kg*m^2)
+    C_G0 = 0.3713; % [m] initial CG location (measured from tip of nose)
+    C_P0 = C_G0 + 0.155; % [m] initial CP location (measured from tip of nose)
     C_L_alpha = 0.01; % (1/rad) TOTALLY WRONG AND NEEDS TO BE CHANGED (JUST A PLACEHOLDER)
     thetaDot0 = 0; % (degrees/s)
     

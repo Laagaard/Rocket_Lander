@@ -103,8 +103,9 @@ ratesOptions = [1 0];
 
 figure(2);
 hold on;
-xlabel('t (s)')
-ylabel('Crash Speed, vertical (m/s)')
+grid on;
+xlabel('Time [s]')
+ylabel('Vertical Impact Velocity [m/s]')
 leastCrashVelocity = 100; % initialize least crash_velocity
 crash_velocity = -200; % initialize 
 for ctr = index_Apogee+6050:index_Crash-200
@@ -113,7 +114,6 @@ for ctr = index_Apogee+6050:index_Crash-200
     Y0_descent = [y(ctr,1) y(ctr,2) y(ctr,3) y(ctr,4) y(ctr,5) y(ctr,6) y(ctr,7)]';
     [t_descent,y_descent] = ode45(@rates,tspan_descent,Y0_descent,options_descent);
     indices_descent = find(y_descent(:,3)>=0); % all states with positive altitude
-
 
     % Check to see if new crash velocity is least deadly crash velocity yet
     term1 = abs(y_descent(indices_descent(end),4));
@@ -131,7 +131,7 @@ for ctr = index_Apogee+6050:index_Crash-200
     % comparison)
     crash_velocity = y_descent(indices_descent(end),4) % (m/s)
     % Check if desired range condition is satisfied within tolerance
-    if abs(abs(crash_velocity)-abs(DesiredCrashSpeed))<=2E0
+    if abs(abs(crash_velocity)-abs(DesiredCrashSpeed))<=1E0
         % display descent firing time
         disp(sprintf('Desired landing speed possible with descent motor timing of %.2f seconds after liftoff.',t_fire));
         plot(t_fire,crash_velocity,'r*')
@@ -145,7 +145,7 @@ for ctr = index_Apogee+6050:index_Crash-200
         % save succesful landing trajectory states
 
 end
-title('Vertical Crash Speed versus Descent Ignition Timing')
+title('Vertical Impact Velocity versus Descent Motor Ignition Timing')
 print('landing speed and timing.png','-dpng','-r300')
 
 
@@ -160,9 +160,12 @@ print('Powered Descent Trajectory.png','-dpng','-r300')
 
 figure(4);
 hold on
-xlabel('t (s)');
-ylabel('');
-plot(freeFlightTime(1:descentTimingIndex),freeFlightStates(1:descentTimingIndex,2),'b*',poweredDescentTime(descentIndices),poweredDescentStates(descentIndices,2),'r*',freeFlightTime(1:descentTimingIndex),freeFlightStates(1:descentTimingIndex,4),'b:',poweredDescentTime(descentIndices),poweredDescentStates(descentIndices,4),'r:')
+grid on
+xlabel('Time [s]');
+ylabel('Velocity [m/s]');
+plot(freeFlightTime(1:descentTimingIndex),freeFlightStates(1:descentTimingIndex,2),'b-',poweredDescentTime(descentIndices),poweredDescentStates(descentIndices,2),'r-',freeFlightTime(1:descentTimingIndex),freeFlightStates(1:descentTimingIndex,4),'b--',poweredDescentTime(descentIndices),poweredDescentStates(descentIndices,4),'r--')
+% yline(1, 'k--', Label="Vertical Landing Velocity Threshold")
+% yline(0.5, 'k-', Label="Horizontal Landing Velocity Threshold", LabelVerticalAlignment="bottom")
 legend('Ascent and free flight v_x','Powered Descent v_x','Ascent and free flight v_y','Powered Descent v_y','location','best')
 title('Vertical and Horizontal Velocities During Flight')
 print('Velocity components during ascent, freeflight, and powered descent.png','-dpng','-r300')
