@@ -8,19 +8,27 @@ import stat
 # DART Modules
 from launch_site import landing_zone_longs, landing_zone_lats, launch_site
 from launch_site import automation_flag # imported to simplify DNT and TVC imports
+import motors
 from rockets import DART_rocket_1, DART_rocket_2, DART_rocket_3 # imported to simplify DNT and TVC imports
+import rockets
 
 # Function for `shutil.rmtree` to call on "Access is denied" error from read-only folder
 def remove_readonly(func, path, excinfo):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-results_dir = "Results"
-
-if os.path.exists(results_dir): # If the results directory already exists
-    None
-else:
-    os.mkdir(results_dir) # Create folder for all results for the given date/time
+results_dir_file_path_prefix = ""
+for ctr in range(motors.directory_levels_to_try):
+    try:
+        results_dir = results_dir_file_path_prefix + "DNT/Results"
+        if os.path.exists(results_dir): # If the results directory already exists
+            None
+        else:
+            os.mkdir(results_dir) # Create folder for all results for the given date/time
+    except (FileNotFoundError): # FileNotFoundError raised when the `DNT/Results` directory is not found
+        results_dir_file_path_prefix += "../"
+    else:
+        break
 
 # String Formatting Based on Launch Date and Time (for organization of results)
 date_format_string_date_only = "%m-%d-%Y"

@@ -3,15 +3,15 @@ import csv
 import math
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
 import sys
+sys.path.append("../")
+# DART Modules
 from dataset_generation import figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
-sys.path.append("../")
 from setup import automation_flag, date_dir_with_time, launch_site
 
 dnt_temporal_resolution = 0.15 # [s] time-step of each DNT discretization, be careful setting too high or too low

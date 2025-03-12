@@ -1,17 +1,9 @@
 # Libraries
 import copy
-from rocketpy import GenericSurface, NoseCone, Rocket, TrapezoidalFins
-import sys
+import math
+from rocketpy import GenericSurface, NoseCone, Parachute, Rocket, TrapezoidalFins
+# DART Modules
 import motors
-
-FILE_NAME = sys.argv[0][2:] # [str] name of the module executed on the command line
-
-# If one of the following modules was executed directly: `rockets.py`, `setup.py`
-if (FILE_NAME == "rockets.py" or FILE_NAME == "setup.py"):
-    # Set Path to the Fin Airfoil Geometry Source
-    fin_airfoil_source_path = "NACA0012.csv"
-else:
-    fin_airfoil_source_path = "../NACA0012.csv" # same TBR as above
 
 # Rocket 1 Characteristics
 total_mass_rocket_1 = 1.431 # [kg] total wet mass of rocket (launch configuration)
@@ -232,28 +224,38 @@ DART_rocket_3_aero_surface = GenericSurface(
 
 # TODO, update CP location for Rocket 3 (SM = 1.3450)
 
-# Construct Fins for Rocket 1
-DART_fins_rocket_1 = TrapezoidalFins(
-    n=3, # [unitless] number of fins
-    root_chord=0.125223, # [m]
-    tip_chord=0.062611, # [m]
-    span=0.26, # [m] true value: 0.08636 (adjusted to make RocketPy SM accurate)
-    rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
-    cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-    airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
-) # TODO, chord and span lengths need to be checked against CAD
+airfoil_source_file_path_prefix = ""
+for ctr in range(motors.directory_levels_to_try):
+    try:
+        # Set Path to the Fin Airfoil Geometry Source
+        fin_airfoil_source_path = airfoil_source_file_path_prefix + "NACA0012.csv"
 
-# Construct Fins for Rocket 2
-DART_fins_rocket_2 = TrapezoidalFins(
-    n=3, # [unitless] number of fins
-    root_chord=0.125223, # [m]
-    tip_chord=0.062611, # [m]
-    span=0.0848, # [m] v1: 0.08636
-    rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
-    cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-    sweep_angle=-0.001, # [deg] fins sweep angle with respect to the rocket centerline
-    airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
-) # TODO, chord and span lengths need to be checked against CAD
+        # Construct Fins for Rocket 1
+        DART_fins_rocket_1 = TrapezoidalFins(
+            n=3, # [unitless] number of fins
+            root_chord=0.125223, # [m]
+            tip_chord=0.062611, # [m]
+            span=0.26, # [m] true value: 0.08636 (adjusted to make RocketPy SM accurate)
+            rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
+            cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
+            airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
+        ) # TODO, chord and span lengths need to be checked against CAD
+
+        # Construct Fins for Rocket 2
+        DART_fins_rocket_2 = TrapezoidalFins(
+            n=3, # [unitless] number of fins
+            root_chord=0.125223, # [m]
+            tip_chord=0.062611, # [m]
+            span=0.0848, # [m] v1: 0.08636
+            rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
+            cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
+            sweep_angle=-0.001, # [deg] fins sweep angle with respect to the rocket centerline
+            airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
+        ) # TODO, chord and span lengths need to be checked against CAD
+    except (ValueError): # ValueError raised when the CSV file isn't found
+        airfoil_source_file_path_prefix += "../"
+    else:
+        break
 
 '''
 -------------------- Add Nose Cone --------------------
@@ -273,10 +275,10 @@ DART_nose = NoseCone(
 upper_button_position: # [m] position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: # [m] position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464) # TODO, positions need to be checked against CAD
+DART_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464) # TODO, positions need to be checked against CAD
 
 # Add Motor to Rocket 1
-DART_rocket_1.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+DART_rocket_1.add_motor(motors.AeroTechG138T, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 1
 DART_rocket_1.add_surfaces(surfaces=DART_rocket_1_aero_surface, positions=(0,0,0))

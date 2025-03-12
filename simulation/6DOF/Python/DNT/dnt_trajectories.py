@@ -6,7 +6,7 @@ import os
 import pandas as pd
 from rocketpy import Flight
 import shutil
-from dataset_generation import figures_output_dir, date_dir_with_time, launch_area_ax, all_landing_zone_perimeters
+from dataset_generation import DART_rocket_1, figures_output_dir, date_dir_with_time, launch_area_ax, all_landing_zone_perimeters
 
 CSV_output_dir = f"{date_dir_with_time}/dnt_trajectories"
 
@@ -18,7 +18,7 @@ number_of_perimeter_points = max(optimal_perimeter_coords.shape) # number of poi
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
     from optimal_trajectory import trajectory_state_history_header, inclination_interpolator, heading_interpolator
-    from setup import automation_flag, launch_rail_length, launch_site, DART_rocket_1, remove_readonly
+    from setup import automation_flag, launch_rail_length, launch_site, remove_readonly
 
     if os.path.exists(CSV_output_dir):
         shutil.rmtree(CSV_output_dir, onerror=remove_readonly) # remove existing directory (and, thereby, all files in it)
