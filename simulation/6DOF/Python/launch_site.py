@@ -33,7 +33,7 @@ else: # read launch parameters from config file
     config_file_path_prefix = ""
     for ctr in range(motors.directory_levels_to_try):
         try:
-            config_file = open(config_file_path_prefix + "config.json")
+            config_file = open(config_file_path_prefix + "launch_parameters.json")
         except (FileNotFoundError): # FileNotFoundError raised when the config file isn't found
             config_file_path_prefix += "../"
         else:
@@ -136,7 +136,7 @@ Forecast, GFS: 0.25-deg geographical resolution, updated every 6 hours (good bal
 Forecast, RAP: 0.19-deg geographical resolution, updated hourly (best temporal resolution and update frequency)
 Forecast, NAM: ~0.045-deg geographical resolution, updated every 6 hours with points spaced every 3 hours (best geographical resolution) (https://www.ncei.noaa.gov/products/weather-climate-models/north-american-mesoscale)
 '''
-if (command_line_args["windmag"] != None and command_line_args["windhead"] != None): # if wind parameters are set on the command line
+if (command_line_args["windmag"] != None and command_line_args["windhead"] != None): # if wind parameters are set on the command line or in the config file
     wind_mag = float(command_line_args["windmag"]) # [m/s] wind velocity magnitude
     wind_head = float(command_line_args["windhead"]) # [deg] direction in which the wind is blowing, CW from North
     wind_u = wind_mag * math.sin(math.radians(wind_head)) # [m/s] East/West component of wind velocity

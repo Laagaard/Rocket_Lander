@@ -84,8 +84,6 @@ DART_rocket_1_aero_surface = GenericSurface(
     name="Rocket 1 Generic Surface"
 )
 
-# TODO, update CP location for Rocket 1 (SM = 1.0655)
-
 # Construct Rocket 2 (for powered descent phase w/ legs stowed)
 DART_rocket_2 = copy.deepcopy(x=DART_rocket_1) # create an independent copy (changes to the copy do not affect the original)
 
@@ -152,8 +150,6 @@ DART_rocket_2_aero_surface = GenericSurface(
     center_of_pressure=(0,0,0),
     name="Rocket 2 Generic Surface"
 )
-
-# TODO, update CP location for Rocket 2 (SM = 1.5980)
 
 # Construct Rocket 3 (for powered descent phase w/ legs deployed)
 DART_rocket_3 = copy.deepcopy(x=DART_rocket_1) # create an independent copy (changes to the copy do not affect the original)
@@ -230,12 +226,12 @@ for ctr in range(motors.directory_levels_to_try):
         # Set Path to the Fin Airfoil Geometry Source
         fin_airfoil_source_path = airfoil_source_file_path_prefix + "NACA0012.csv"
 
-        # Construct Fins for Rocket 1
+        # Construct Fins for Rocket 1 (parameters were altered from true values to make initial SM = 1.0655)
         DART_fins_rocket_1 = TrapezoidalFins(
             n=3, # [unitless] number of fins
             root_chord=0.125223, # [m]
             tip_chord=0.062611, # [m]
-            span=0.26, # [m] true value: 0.08636 (adjusted to make RocketPy SM accurate)
+            span=0.258, # [m] true value: 0.08636 (adjusted to make RocketPy SM accurate)
             rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
             cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
             airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
@@ -275,10 +271,10 @@ DART_nose = NoseCone(
 upper_button_position: # [m] position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: # [m] position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464) # TODO, positions need to be checked against CAD
+DART_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
 
 # Add Motor to Rocket 1
-DART_rocket_1.add_motor(motors.AeroTechG138T, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+DART_rocket_1.add_motor(motors.AeroTechG79W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 1
 DART_rocket_1.add_surfaces(surfaces=DART_rocket_1_aero_surface, positions=(0,0,0))
@@ -289,5 +285,17 @@ DART_rocket_1.add_surfaces(surfaces=DART_fins_rocket_1, positions=(0,0,-0.262231
 # Apply the nose cone to Rocket 1
 DART_rocket_1.add_surfaces(surfaces=DART_nose, positions=(0, 0, 0.37133))
 
-# Apply the fins to Rocket 2
-DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,0)) # TODO, positions need to be adjusted to reflect the distance between the TVC motor and the fins
+# Print `DART_rocket_1` Information
+print("DART ROCKET 1 INFORMATION \n-------------------------", end="")
+DART_rocket_1.info()
+
+# Apply the `GenericSurface` aerodynamics to Rocket 2
+DART_rocket_2.add_surfaces(surfaces=DART_rocket_2_aero_surface, positions=(0,0,0))
+
+# Add Motor to Rocket 1 (position was altered from true value to make initial SM = -1.598)
+DART_rocket_2.add_motor(motors.AeroTechG25W, position=-2.32) # TODO, (update position) postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+
+# Print `DART_rocket_2` Information
+print("DART ROCKET 2 INFORMATION \n-------------------------", end="")
+DART_rocket_2.info()
+DART_rocket_2.draw()
