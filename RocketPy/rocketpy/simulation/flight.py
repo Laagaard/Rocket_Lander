@@ -1160,7 +1160,7 @@ class Flight:
             )
             # Store initial conditions
             self.initial_solution = [
-                self.t_initial,
+                0,
                 x_init,
                 y_init,
                 z_init,
@@ -1190,6 +1190,7 @@ class Flight:
         else:
             # Initial solution given, ignore rail phase
             # TODO: Check if rocket is actually out of rail. Otherwise, start at rail
+            self.t_initial = self.initial_solution[0]
             self.out_of_rail_state = self.initial_solution[1:]
             self.out_of_rail_time = self.initial_solution[0]
             self.out_of_rail_time_index = 0
@@ -1864,6 +1865,7 @@ class Flight:
         else:
             thrust_vector = Vector([0, 0, thrust])  # Default thrust along +Z
             thrust_torque = Vector([0, 0, 0])  
+
 
         M1 += self.rocket.cp_eccentricity_y * R3
         M2 -= self.rocket.cp_eccentricity_x * R3

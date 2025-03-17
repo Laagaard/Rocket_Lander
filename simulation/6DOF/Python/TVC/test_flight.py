@@ -1,6 +1,9 @@
 import sys
+import csv
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
+import quaternion
 
 sys.path.append('../')
 import setup
@@ -12,15 +15,10 @@ test_flight = Flight(
     rocket=setup.DART_rocket_1,  # Use Rocket 1 (Ascent)
     environment=setup.launch_site,
     rail_length=1.5,  # TBR (m)
-    inclination=80,  # TBR (deg)
+    inclination=86,  # TBR (deg)
     heading=0,  # (deg)
     time_overshoot=True
 )
-
-test_flight.plots.trajectory_3d()
-test_flight.plots.linear_kinematics_data()
-test_flight.plots.attitude_data()
-#print(f"Shape of initial_solution: {test_flight.initial_solution}")
 
 # --- Extract Time, Velocity, and Altitude ---
 time = [row[0] for row in test_flight.solution]  
@@ -45,6 +43,9 @@ t_burnout = setup.AeroTechG25W.burn_out_time
 burnout_index = min(range(len(time)), key=lambda i: abs(time[i] - t_burnout))
 motor_impulse = momentum[burnout_index]
 
+altitude = test_flight.z(time[burnout_index])
+print("Altitude when burnout:", altitude)
+
 # Initialize index_fire
 index_fire = None
 
@@ -55,7 +56,7 @@ for x in range(len(velocity)):
 
     # Momentum & Impulse logic
     if rocket_impulse > motor_impulse and vz[x] < 0:
-        index_fire = x
+        index_fire = x + 10
         break  # Exit loop once the condition is met
 
 print(index_fire)
@@ -66,18 +67,32 @@ if index_fire is not None:
 
     # --- Adjust Initial Conditions for Descent Phase ---
     speed = test_flight.speed(time[index_fire])
+    altitude = test_flight.z(time[index_fire])
 
     print("Speed when descent fire:", speed)
+    print("Altitude when descent fire:", altitude)
     # Compute quaternion conjugate to flip orientation
     q0 = test_flight.e0(time[index_fire])
     q1 = test_flight.e1(time[index_fire])
     q2 = test_flight.e2(time[index_fire])
     q3 = test_flight.e3(time[index_fire])
 
-    q_flipped = [-q2, -q3, q0, q1]  # Flipped quaternion
+    # print('Original Quat:',[q0, q1, q2, q3])
+
+    # dcm2 = np.array([[1,0,0],[0,-1,0],[0,0,-1]])
+    
+    # dcm1 = R.from_quat([q0, q1, q2, q3])
+    
+    # dcm3 = dcm2 * dcm1.as_matrix()
+
+    # q_flipped = R.from_matrix(dcm3).as_quat() # Flipped quaternion
+
+    # print('New Quat:',q_flipped)
+
+    q_flipped = [-q1, q0, -q3, q2] # Long rotation
 
     # --- Enable TVC for Descent Rocket ---
-    ENABLE_TVC = True  # Enable TVC for second rocket body
+    # ENABLE_TVC = True  # Enable TVC for second rocket body
 
     # --- Second Simulation (Descent Phase) ---
     # Construct initial_solution as a 1D array
@@ -98,26 +113,18 @@ if index_fire is not None:
         test_flight.w3(time[index_fire])   # Angular velocity w3
     ]
 
-    # Attach TVC system
-    DART_rocket_2 = setup.DART_rocket_2
-    tvc_system = TVC(max_gimbal=10, servo_rate=375)
-    DART_rocket_2.add_TVC(tvc_system)
-
-    # --- LQR Controller Setup ---
-    sampling_rate = 10  # Hz
-    controller = _Controller(
-        interactive_objects=[DART_rocket_2.TVC, DART_rocket_2],
-        controller_function=_Controller.tvc_lqr_controller,
-        sampling_rate=sampling_rate,
+    # Attach TVC system using the add_TVC method
+    tvc_system, tvc_controller = setup.DART_rocket_2.add_TVC(
+        TVC(max_gimbal=0, servo_rate=375),
+        _Controller.tvc_lqr_controller,
+        sampling_rate=10,
         initial_observed_variables=None,
-        name="LQR Controller"
+        name="TVC LQR Controller"
     )
 
-    DART_rocket_2.controller = controller
-
-    # Create the descent flight
+    # Create the descent flight using Rocket 2
     descent_flight = Flight(
-        rocket=DART_rocket_2,
+        rocket= setup.DART_rocket_2,
         environment=setup.launch_site,
         rail_length=0.1,
         initial_solution=initial_solution,
@@ -127,6 +134,25 @@ if index_fire is not None:
     # Plot the 3D trajectory
     descent_flight.plots.trajectory_3d()
     descent_flight.plots.linear_kinematics_data()
+    descent_flight.plots.angular_kinematics_data()
+
+    
+    descent_flight.export_data('Lukey_pukey.csv','x','y','altitude','e0','e1','e2','e3')
+
+    # --- Extract Time and Flight Path Angle ---
+    time_descent = [t for t in descent_flight.time]  # Extract time points
+    path_angle = [descent_flight.attitude_angle(t) for t in time_descent]  # Compute path angle
+
+    # --- Plot Flight Path Angle Over Time ---
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_descent, path_angle, label="Flight Path Angle", color='g')
+    plt.xlabel("Time (s)")
+    plt.ylabel("Flight Path Angle (degrees)")
+    plt.title("Rocket Flight Path Angle During Descent")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
 
     # --- Plot TVC Gimbal Angles Over Time ---
     history = tvc_system.get_gimbal_history()
@@ -143,3 +169,4 @@ if index_fire is not None:
         plt.show()
     else:
         print("No gimbal commands were recorded.")
+

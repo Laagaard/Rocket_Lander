@@ -1,6 +1,7 @@
 # TVC.py
 import numpy as np
 from rocketpy.mathutils.vector_matrix import Matrix, Vector
+import math
 
 class TVC:
     """
@@ -61,6 +62,31 @@ class TVC:
         self.gimbal_angle_y = 0.0  # Initial yaw gimbal angle (radians)
         self.command_history = []  # Initialize history for commanded angles
 
+    def update(self, time, state_vector):
+        """
+        Update TVC system based on the rocket's state.
+
+        Parameters
+        ----------
+        time : float
+            Current simulation time in seconds.
+        state_vector : list
+            State vector containing the rocket's current state.
+        """
+        # Extract the LQR controller if available
+        if hasattr(self, "controller") and self.controller is not None:
+            # Run the controller to get new gimbal commands
+            observed_variables = self.controller.update(time, state_vector)
+
+            # Ensure we got valid pitch and yaw commands
+            if observed_variables is not None and len(observed_variables) == 2:
+                pitch_command, yaw_command = observed_variables
+                dt = 1.0 / self.controller.sampling_rate  # Compute time step
+
+                # Update gimbal angles based on control commands
+                self.update_gimbal(pitch_command, yaw_command, dt, time)
+
+    
     def update_gimbal(self, pitch_command, yaw_command, dt, time):
         """
         Update gimbal angles based on commanded inputs with rate limits.
@@ -84,24 +110,34 @@ class TVC:
             yaw_command = self.gimbal_angle_y
 
         # Convert commands to a Vector (only pitch and yaw, z is zero)
-        command_vector = Vector(pitch_command, yaw_command, 0)
-        command_magnitude = command_vector.norm()
+        command_vector = Vector([pitch_command, yaw_command, 0])
+        command_magnitude = math.sqrt(command_vector[0]**2 + command_vector[1]**2 + command_vector[2]**2)
 
         # Enforce maximum gimbal angle (circular constraint)
         if command_magnitude > self.max_gimbal:
-            command_vector = command_vector.unit_vector() * self.max_gimbal
+            scale_factor = self.max_gimbal / command_magnitude
+            command_vector = Vector([
+                command_vector[0] * scale_factor,
+                command_vector[1] * scale_factor,
+                command_vector[2] * scale_factor
+            ])
 
         # Apply rate limiting
         max_step = self.gimbal_rate * dt
-        current_vector = Vector(self.gimbal_angle_x, self.gimbal_angle_y, 0)
+        current_vector = Vector([self.gimbal_angle_x, self.gimbal_angle_y, 0])
         delta_vector = command_vector - current_vector
-        step_magnitude = delta_vector.norm()
+        step_magnitude = math.sqrt(delta_vector[0]**2 + delta_vector[1]**2 + delta_vector[2]**2)
         if step_magnitude > max_step:
-            delta_vector = delta_vector.unit_vector() * max_step
+            scale_factor = max_step / step_magnitude
+            delta_vector = Vector([
+                delta_vector[0] * scale_factor,
+                delta_vector[1] * scale_factor,
+                delta_vector[2] * scale_factor
+            ])
 
         # Update angles
-        self.gimbal_angle_x += delta_vector.x
-        self.gimbal_angle_y += delta_vector.y
+        self.gimbal_angle_x += delta_vector[0]
+        self.gimbal_angle_y += delta_vector[1]
 
         # Record the command history for later plotting
         self.command_history.append((time, self.gimbal_angle_x, self.gimbal_angle_y))
