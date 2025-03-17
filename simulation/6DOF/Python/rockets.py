@@ -303,6 +303,9 @@ if (launch_site.parachute_flag):
 # Add Rail Buttons to Rocket 2 (# TODO, update positions with Excel sheet values)
 DART_rocket_2_rail_buttons = DART_rocket_2.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
 
+# TODO
+# 1) Update position with Excel sheet value
+# 2) Adjust the CP location to get correct initial SM (-1.598)
 # Add Motor to Rocket 2
 DART_rocket_2.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
@@ -315,11 +318,17 @@ DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,0.2485))
 # Add Rail Buttons to Rocket 3 (# TODO, update positions with Excel sheet values)
 DART_rocket_3_rail_buttons = DART_rocket_3.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
 
-# Add Motor to Rocket 3 (position was altered from true value to make initial SM = -1.345 cal (as desired))
-DART_rocket_3.add_motor(motors.AeroTechG25W, position=-1.964) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+# TODO
+# 1) Update position with Excel sheet value
+# 2) Adjust the CP location to get correct initial SM (-1.345)
+# Add Motor to Rocket 3
+DART_rocket_3.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 3
 DART_rocket_3.add_surfaces(surfaces=DART_rocket_3_aero_surface, positions=(0,0,0))
+
+# Apply the fins to Rocket 3 (position was altered from true value to make initial SM = -1.345 cal (as desired))
+DART_rocket_3.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,0.2076))
 
 # If one of the following modules was executed directly: rockets.py, setup.py
 if (FILE_NAME == "rockets.py" or FILE_NAME == "setup.py"):
