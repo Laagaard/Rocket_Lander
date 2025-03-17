@@ -43,7 +43,7 @@ ratesOptions = [0 0];
 
 % Setup Animation
 global DART_stl orientation_animation trajectory_animation pos_tracked_X pos_tracked_Y pos_tracked_Z xdot_body ydot_body zdot_body
-setup_animation(eul2quat([psi0 theta0 phi0]))
+% setup_animation(eul2quat([psi0 theta0 phi0]))
 
 initial_launch_angle = pi/2 - abs(pi/2 - (theta0)) % [rad]
 
@@ -66,13 +66,14 @@ for pitch_angle = rad2deg(initial_launch_angle)
         fprintf('Desired range possible with launch angle of %.2f degrees.\n', thetaLaunch)
 
         figure()
-        plot3(freeFlightStates(indices,1), freeFlightStates(indices,3), freeFlightStates(indices,5),'b')
+        plot(freeFlightStates(indices,3), freeFlightStates(indices,5),'b')
         hold on
         [~, index_burnout] = min(abs(freeFlightTime - burnTime));
-        plot3(freeFlightStates(index_burnout,1),freeFlightStates(index_burnout,3),freeFlightStates(index_burnout,5),'.r',MarkerSize=10)
+        plot(freeFlightStates(index_burnout,3),freeFlightStates(index_burnout,5),'.r',MarkerSize=10)
         grid minor
-        xlabel('x (m)'); ylabel('y (m)'); zlabel('z (m)')
-        title('3D Trajectory')
+        xlabel('x (m)'); ylabel('y (m)');
+        title('2D Trajectory')
+        ylim([0, 120]);
         print('time versus trajectory.png','-dpng','-r300')
         freeFlightStates(:,5) = atan2d(freeFlightStates(:,4),freeFlightStates(:,2)); % (degrees)
         % break

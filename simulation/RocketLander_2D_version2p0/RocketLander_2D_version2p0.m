@@ -103,9 +103,14 @@ ratesOptions = [1 0];
 
 figure(2);
 hold on;
+<<<<<<< Updated upstream
 grid on;
 xlabel('Time [s]')
 ylabel('Vertical Impact Velocity [m/s]')
+=======
+xlabel('t (s)')
+ylabel('Vertical Impact Velocity (m/s)')
+>>>>>>> Stashed changes
 leastCrashVelocity = 100; % initialize least crash_velocity
 crash_velocity = -200; % initialize 
 for ctr = index_Apogee+6050:index_Crash-200
@@ -145,7 +150,11 @@ for ctr = index_Apogee+6050:index_Crash-200
         % save succesful landing trajectory states
 
 end
+<<<<<<< Updated upstream
 title('Vertical Impact Velocity versus Descent Motor Ignition Timing')
+=======
+title('Vertical Impact Velocity versus Descent Ignition Timing')
+>>>>>>> Stashed changes
 print('landing speed and timing.png','-dpng','-r300')
 
 

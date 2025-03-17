@@ -3,15 +3,15 @@ import csv
 import math
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pandas as pd
 from skimage.measure import EllipseModel
 from skspatial.objects import Line, Point
 import sys
+sys.path.append("../")
+# DART Modules
 from dataset_generation import figures_output_dir, launch_area_ax
 from dnt_trajectories import CSV_output_dir, optimal_perimeter_coords
-sys.path.append("../")
 from setup import automation_flag, date_dir_with_time, launch_site
 
 dnt_temporal_resolution = 0.15 # [s] time-step of each DNT discretization, be careful setting too high or too low
@@ -31,12 +31,12 @@ test_latitudes = [] # [m] list to track y-coordinates of test points
 test_altitudes = [] # [m] list to track altitudes of test points
 
 # DNT Plot
-launch_area_ax.plot(optimal_df["longitude"], optimal_df["latitude"], 'b', label="Optimal Trajectory")
+launch_area_ax.plot(optimal_df[" Longitude (°)"], optimal_df[" Latitude (°)"], 'b', label="Optimal Trajectory")
 launch_area_ax.set_title(f"Domain of Nominal Trajectories \n(Time Resolution: {dnt_temporal_resolution} [s])")
 
-optimal_idx = (optimal_df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
-reference_longitude = optimal_df["longitude"][optimal_idx] # [m] longitude coordinate of reference location
-reference_latitude = optimal_df["latitude"][optimal_idx] # [m] latitude coordinate of reference locations
+optimal_idx = (optimal_df["# Time (s)"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
+reference_longitude = optimal_df[" Longitude (°)"][optimal_idx] # [m] longitude coordinate of reference location
+reference_latitude = optimal_df[" Latitude (°)"][optimal_idx] # [m] latitude coordinate of reference locations
 
 ellipse = EllipseModel()
 if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the optimal landing zone perimeter coordss
@@ -47,10 +47,10 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
         if (not automation_flag):
             print(f"Current Time: {round(timestep_current_lower_bound, 2)}")
         optimal_idx = (optimal_df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step of optimal trajectory nearest to the desired time value
-        reference_longitude = optimal_df["longitude"][optimal_idx] # [m] longitude coordinate of reference location
-        reference_latitude = optimal_df["latitude"][optimal_idx] # [m] latitude coordinate of reference location
-        optimal_vx = optimal_df["x_vel"][optimal_idx] # [m/s] x_velocity of the optimal trajectory nearest the time step of interest
-        optimal_vy = optimal_df["y_vel"][optimal_idx] # [m/s] y_velocity of the optimal trajectory nearest the time step of interest
+        reference_longitude = optimal_df[" Longitude (°)"][optimal_idx] # [m] longitude coordinate of reference location
+        reference_latitude = optimal_df[" Latitude (°)"][optimal_idx] # [m] latitude coordinate of reference location
+        optimal_vx = optimal_df[" Vx (m/s)"][optimal_idx] # [m/s] x_velocity of the optimal trajectory nearest the time step of interest
+        optimal_vy = optimal_df[" Vy (m/s)"][optimal_idx] # [m/s] y_velocity of the optimal trajectory nearest the time step of interest
 
         try:
             optimal_traj_tangent_slope = optimal_vy/optimal_vx # slope of tangent line to the optimal trajectory
@@ -64,11 +64,11 @@ if (ellipse.estimate(optimal_perimeter_coords)): # fit the best-fit model to the
         for filename in os.listdir(CSV_output_dir):
             df = pd.read_csv(f"{CSV_output_dir}/{filename}") # copy CSV data into pandas dataframe
 
-            test_idx = (df["Time"] - timestep_current_lower_bound).abs().idxmin() # index of solution step nearest to the desired time value
+            test_idx = (df["# Time (s)"] - timestep_current_lower_bound).abs().idxmin() # index of solution step nearest to the desired time value
 
-            test_longitude = df["longitude"][test_idx] # [m] longitude coordinate of test location
-            test_latitude = df["latitude"][test_idx] # [m] latitude coordinate of test location
-            test_altitude = df["altitude"][test_idx] # [m] z-coordinate (altitude) of test location
+            test_longitude = df[" Longitude (°)"][test_idx] # [m] longitude coordinate of test location
+            test_latitude = df[" Latitude (°)"][test_idx] # [m] latitude coordinate of test location
+            test_altitude = df[" Altitude AGL (m)"][test_idx] # [m] z-coordinate (altitude) of test location
 
             # Append to Tracking Lists
             test_longitudes.append(test_longitude)
