@@ -1,6 +1,5 @@
 # Libraries
 import csv
-import math
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
@@ -12,20 +11,6 @@ import shutil
 import sys
 sys.path.append("../") # Tell Python where to look for the `setup.py` file
 from setup import all_landing_zone_perimeters, automation_flag, DART_rocket_1, date_dir_date_only, date_dir_with_time, gdf_landing_zone_centers, launch_rail_length, launch_site, launch_area_ax, remove_readonly
-
-# Parachute Characteristics
-C_D = 0.84 # [unitless] parachute drag coefficient
-parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
-
-# Construct Parachute
-main_parachute = DART_rocket_1.add_parachute(
-    name="main", # name of the parachute (no impact on simulation)
-    cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
-    trigger="apogee",
-    sampling_rate=10, # [Hz] sampling rate in which the trigger function works (used to simulate sensor refresh rates)
-    lag=0, # [s] time between the ejection system is triggered and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
-    noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
-)
 
 figures_output_dir = f"{date_dir_with_time}/figures" # output directory for matplotlib figures
 

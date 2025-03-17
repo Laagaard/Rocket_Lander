@@ -17,6 +17,7 @@ command_line_args = {
   "location": "ROAR", # default location corresponds to launching independently in the Compound (at the SRA launch location)
   "windmag": None, # default will pull API
   "windhead": None, # default will pull API
+  "parachute": False, # default will not add a parachute to the rocket
   "automated": False # default value indicates the script is being run manually
 } # dictionary of recognized command line arguments
 
@@ -57,6 +58,7 @@ if (command_line_args["date"] != "" and command_line_args["time"] != ""): # if t
 else: # the launch date and time were NOT passed as command line arguments
     launch_date_and_time = datetime.datetime.now() # launch date and time
 
+parachute_flag = command_line_args["parachute"] # flag to signal whether or not to add the parachute to the rocket (`True` will add the parachute)
 automation_flag = command_line_args["automated"] # flag to signal whether or not the program is being executed by an automatic runner (`True` if it is)
 
 '''
@@ -66,8 +68,8 @@ ROAR, NAR section 795: https://www.google.com/maps/@28.5633031,-81.0187189,261m/
 '''
 launch_site_latitude_independent = 27.933880 # [deg] North, launch site latitude (if launching independently (i.e., without a NAR section))
 launch_site_longitude_independent = -80.709505 # [deg] West, launch site longitude (if launching independently (i.e., without a NAR section))
-launch_site_latitude_ROAR = 28 + (33/60) + (48/3600) # [deg] North, launch site latitude (if launching with ROAR, NAR section 795))
-launch_site_longitude_ROAR = -(81 + (1/60) + (2/3600)) # [deg] West, launch site longitude (if launching with ROAR, NAR section 795))
+launch_site_latitude_ROAR = 28 + (33/60) + (48/3600) # [deg] North, launch site latitude (if launching with ROAR, NAR section 795)
+launch_site_longitude_ROAR = -(81 + (1/60) + (2/3600)) # [deg] West, launch site longitude (if launching with ROAR, NAR section 795)
 launch_site_latitude_SRA = 27.932715  # [deg] North, launch site latitude (if launching with SRA)
 launch_site_longitude_SRA = -80.709536  # [deg] West, launch site longitude (if launching with SRA)
 
@@ -100,18 +102,10 @@ landing_zone_longs_independent = [-80.711389, -80.710455, -80.709524, -80.709506
 # Landing Zone Coordinates (if launching with ROAR, NAR section 795)
 landing_zone_lats_ROAR = [launch_site.latitude + 0.001,         launch_site.latitude + 0.001,       launch_site.latitude + 0.001,       launch_site.latitude + 0.001,       launch_site.latitude + 0.001,
                           launch_site.latitude + (2*0.001/3),   launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3), launch_site.latitude + (2*0.001/3),
-                          launch_site.latitude + 0.001/3,       launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,
-                          launch_site.latitude,                 launch_site.latitude,                                                   launch_site.latitude,               launch_site.latitude,
-                          launch_site.latitude - 0.001/3,       launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,     launch_site.latitude - 0.001/3,
-                          launch_site.latitude - (2*0.001/3),   launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3), launch_site.latitude - (2*0.001/3),
-                          launch_site.latitude - 0.001,         launch_site.latitude - 0.001,       launch_site.latitude - 0.001,       launch_site.latitude - 0.001,       launch_site.latitude - 0.001] # [deg] latitude coordinates of landing zone centers
+                          launch_site.latitude + 0.001/3,       launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3,     launch_site.latitude + 0.001/3] # [deg] latitude coordinates of landing zone centers
 landing_zone_longs_ROAR = [launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
                            launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
-                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
-                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,                                        launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
-                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
-                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,
-                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001] # [deg] longitude coordinates of landing zone centers
+                           launch_site.longitude - 0.001,       launch_site.longitude - 0.001/2,    launch_site.longitude,              launch_site.longitude + 0.001/2,    launch_site.longitude + 0.001,] # [deg] longitude coordinates of landing zone centers
 
 # Landing Zone Coordinates (if launching with Spaceport Rocketry Association)
 landing_zone_lats_SRA = landing_zone_lats_independent  # [deg] latitude coordinates of landing zone centers (clockwise around launch site)
@@ -169,6 +163,5 @@ else: # pull wind information from API
 # If one of the following modules was executed directly: launch_site.py, setup.py
 if (FILE_NAME == "launch_site.py" or FILE_NAME == "setup.py"):
     # Print information of launch site conditions (if not using ISA)
-    # if (launch_site.atmospheric_model_type != "standard_atmosphere"):
     launch_site_prints = prints.environment_prints._EnvironmentPrints(launch_site)
     launch_site_prints.all()

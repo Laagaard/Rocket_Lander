@@ -26,7 +26,7 @@ thrust_source_file_path_prefix = ""
 for ctr in range(directory_levels_to_try):
     try:
         # Set Path to the Thrust Curve Sources
-        thrust_source_path_G25W = thrust_source_file_path_prefix + "DART_AeroTechG25W_thrustcurve.csv" # TODO, not a robust solution (only works from a directory one level higher)
+        thrust_source_path_G25W = thrust_source_file_path_prefix + "DART_AeroTechG25W_thrustcurve.csv"
         thrust_source_path_G77R = thrust_source_file_path_prefix + "AeroTechG77R_thrustcurve.csv"
         thrust_source_path_G79W = thrust_source_file_path_prefix + "AeroTechG79W_thrustcurve.csv"
         thrust_source_path_G138T = thrust_source_file_path_prefix + "AeroTechG138T_thrustcurve.csv"

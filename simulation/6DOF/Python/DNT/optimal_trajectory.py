@@ -1,6 +1,5 @@
 # Libraries
 import csv
-import math
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
@@ -23,7 +22,6 @@ heading_interpolator = mtri.LinearTriInterpolator(impact_triangulation, z=trajec
 optimal_heading = heading_interpolator.__call__(optimal_landing_zone_df["longitude"][0], optimal_landing_zone_df["latitude"][0]) # [deg] optimal launch heading for optimal landing zone center
 
 launch_information_header = ["Time", "Inclination", "Heading", "Landing Zone", "Impact Angle"] # CSV header for optimal trajectory launch information
-trajectory_state_history_header = ["Time", "longitude", "latitude", "altitude", "x_vel", "y_vel"] # CSV header for all DNT trajectory simulation files
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
@@ -56,15 +54,9 @@ if __name__ == "__main__":
     launch_information_writer.writerow([date_string_time_only, np.round(optimal_inclination, 2), np.round(optimal_heading, 2), landing_zone_number, np.round(final_angle, 2)])
     launch_information_file.close()
 
-    trajectory_state_history_file = open(f"{date_dir_with_time}/optimal_trajectory.csv", 'w', newline="") # output CSV file containing trajectory information
-    trajectory_state_history_writer = csv.writer(trajectory_state_history_file) # CSV writer for output file containing trajectory information
-    trajectory_state_history_writer.writerow(trajectory_state_history_header) # write header row of output CSV file containing optimal trajectory information
-
-    # Write data at each time step to the output CSV file (#TODO, change to use RocketPy export_data method)
-    for time_step in solution_time:
-        time_step_data = [time_step, test_flight.longitude(time_step), test_flight.latitude(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
-        trajectory_state_history_writer.writerow(time_step_data)
-    trajectory_state_history_file.close()
+    # Write data at each time step to the output CSV file
+    test_flight.export_data(f"{date_dir_with_time}/optimal_trajectory.csv", "longitude", "latitude", "altitude", "vx", "vy")
+    print(test_flight.apogee_state)
 
     launch_area_ax.plot(test_flight.longitude(solution_time), test_flight.latitude(solution_time), 'b', label="Trajectory")
     launch_area_ax.set_title(f"Optimal Trajectory \n(Inclination: {np.round(optimal_inclination, 2)} deg, Heading: {np.round(optimal_heading, 2)} deg)")

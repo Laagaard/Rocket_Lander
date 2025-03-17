@@ -17,7 +17,7 @@ number_of_perimeter_points = max(optimal_perimeter_coords.shape) # number of poi
 
 # Run if the script is executed directly (i.e., not as a module)
 if __name__ == "__main__":
-    from optimal_trajectory import trajectory_state_history_header, inclination_interpolator, heading_interpolator
+    from optimal_trajectory import inclination_interpolator, heading_interpolator
     from setup import automation_flag, launch_rail_length, launch_site, remove_readonly
 
     if os.path.exists(CSV_output_dir):
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     optimal_trajectory_df = pd.read_csv(f"{date_dir_with_time}/optimal_trajectory.csv") # df of optimal trajectory data
 
     # Plot DNT Impact Locations
-    launch_area_ax.plot(optimal_trajectory_df["longitude"], optimal_trajectory_df["latitude"], 'b', label="Optimal Trajectory")
+    launch_area_ax.plot(optimal_trajectory_df[" Longitude (°)"], optimal_trajectory_df[" Latitude (°)"], 'b', label="Optimal Trajectory")
     launch_area_ax.set_title(f"DNT Trajectory Simulation Results")
 
     iteration_counter = 0 # counter of the number of trajectories simulated
@@ -64,15 +64,8 @@ if __name__ == "__main__":
         impact_latitude = test_flight.latitude(solution_time)[-1]
         launch_area_ax.plot(impact_longitude, impact_latitude, 'b.')
 
-        output_file = open(f"{CSV_output_dir}/trajectory_" + str(iteration_counter) + ".csv", 'w', newline="") # output CSV file containing trajectory information
-        writer = csv.writer(output_file) # CSV writer for output file containing trajectory information
-        writer.writerow(trajectory_state_history_header) # write header row of output CSV file containing optimal trajectory information
-
         # Write data at each time step to the output CSV file
-        for time_step in solution_time:
-            time_step_data = [time_step, test_flight.longitude(time_step), test_flight.latitude(time_step), test_flight.z(time_step), test_flight.vx(time_step), test_flight.vy(time_step)]
-            writer.writerow(time_step_data)
-        output_file.close()
+        test_flight.export_data(f"{CSV_output_dir}/trajectory_" + str(iteration_counter) + ".csv", "longitude", "latitude", "altitude", "vx", "vy")
 
     plt.tight_layout()
     plt.savefig(f"{figures_output_dir}/dnt_trajectories.png", transparent=True, dpi=1000) # save the figure with a transparent background

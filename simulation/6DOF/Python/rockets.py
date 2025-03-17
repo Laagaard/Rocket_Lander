@@ -1,9 +1,13 @@
 # Libraries
 import copy
 import math
-from rocketpy import GenericSurface, NoseCone, Parachute, Rocket, TrapezoidalFins
+from rocketpy import GenericSurface, NoseCone, Rocket, TrapezoidalFins
+import sys
 # DART Modules
+import launch_site
 import motors
+
+FILE_NAME = sys.argv[0][2:] # [str] name of the module executed on the command line
 
 # Rocket 1 Characteristics
 total_mass_rocket_1 = 1.431 # [kg] total wet mass of rocket (launch configuration)
@@ -14,8 +18,8 @@ DART_rocket_1 = Rocket(
     radius=80.73/1000, # [m] largest outer radius
     mass=total_mass_rocket_1 - motor_mass_rocket_1, # [kg] dry mass of the rocket
     inertia=(0.046172709, 0.046138602, 0.001703419, -1.53675E-05, -2.59173E-05, 3.91814E-05), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
-    power_off_drag=0.456, # [unitless] C_D without motor firing (# TODO, update with new CFD results)
-    power_on_drag=0.456, # [unitless] C_D with motor firing (# TODO, update with new CFD results)
+    power_off_drag=0.456, # [unitless] C_D without motor firing
+    power_on_drag=0.456, # [unitless] C_D with motor firing
     center_of_mass_without_motor=0, # [m] position of the rocket CG w/o motors relative to the rocket's coordinate system
     coordinate_system_orientation="tail_to_nose" # direction of positive coordinate system axis
 )
@@ -218,24 +222,22 @@ DART_rocket_3_aero_surface = GenericSurface(
     name="Rocket 3 Generic Surface"
 )
 
-# TODO, update CP location for Rocket 3 (SM = 1.3450)
-
 airfoil_source_file_path_prefix = ""
 for ctr in range(motors.directory_levels_to_try):
     try:
         # Set Path to the Fin Airfoil Geometry Source
         fin_airfoil_source_path = airfoil_source_file_path_prefix + "NACA0012.csv"
 
-        # Construct Fins for Rocket 1 (parameters were altered from true values to make initial SM = 1.0655)
+        # Construct Fins for Rocket 1
         DART_fins_rocket_1 = TrapezoidalFins(
             n=3, # [unitless] number of fins
             root_chord=0.125223, # [m]
             tip_chord=0.062611, # [m]
-            span=0.258, # [m] true value: 0.08636 (adjusted to make RocketPy SM accurate)
+            span=0.08636, # [m]
             rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
             cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-            airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
-        ) # TODO, chord and span lengths need to be checked against CAD
+            airfoil=(fin_airfoil_source_path, "degrees") # [CSV of {alpha,C_L}, alpha provided in degrees]
+        )
 
         # Construct Fins for Rocket 2
         DART_fins_rocket_2 = TrapezoidalFins(
@@ -246,8 +248,8 @@ for ctr in range(motors.directory_levels_to_try):
             rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
             cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
             sweep_angle=-0.001, # [deg] fins sweep angle with respect to the rocket centerline
-            airfoil=(fin_airfoil_source_path, "degrees"), # [CSV of {alpha,C_L}, alpha provided in degrees]
-        ) # TODO, chord and span lengths need to be checked against CAD
+            airfoil=(fin_airfoil_source_path, "degrees") # [CSV of {alpha,C_L}, alpha provided in degrees]
+        )
     except (ValueError): # ValueError raised when the CSV file isn't found
         airfoil_source_file_path_prefix += "../"
     else:
@@ -271,7 +273,7 @@ DART_nose = NoseCone(
 upper_button_position: # [m] position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: # [m] position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
+DART_rocket_1_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
 
 # Add Motor to Rocket 1
 DART_rocket_1.add_motor(motors.AeroTechG79W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
@@ -279,23 +281,62 @@ DART_rocket_1.add_motor(motors.AeroTechG79W, position=-0.366905) # postion: [m] 
 # Apply the `GenericSurface` aerodynamics to Rocket 1
 DART_rocket_1.add_surfaces(surfaces=DART_rocket_1_aero_surface, positions=(0,0,0))
 
-# Apply the fins to Rocket 1
-DART_rocket_1.add_surfaces(surfaces=DART_fins_rocket_1, positions=(0,0,-0.2622311))
+# Apply the fins to Rocket 1 (position was altered from true value to make initial SM = 1.066 cal (as desired))
+DART_rocket_1.add_surfaces(surfaces=DART_fins_rocket_1, positions=(0,0,-0.1532))
 
-# Apply the nose cone to Rocket 1
-DART_rocket_1.add_surfaces(surfaces=DART_nose, positions=(0, 0, 0.37133))
+# Apply the parachute to Rocket 1 (per command line arguments or JSON file)
+if (launch_site.parachute_flag):
+    # Parachute Characteristics
+    C_D = 0.84 # [unitless] parachute drag coefficient
+    parachute_reference_area=math.pi*(30*0.0254/2)**2 # [m^2] reference area of parachute
 
-# Print `DART_rocket_1` Information
-print("DART ROCKET 1 INFORMATION \n-------------------------", end="")
-DART_rocket_1.info()
+    # Construct Parachute
+    main_parachute = DART_rocket_1.add_parachute(
+        name="main", # name of the parachute (no impact on simulation)
+        cd_s=C_D*parachute_reference_area, # [m^2] drag coefficient times parachute reference area
+        trigger="apogee",
+        sampling_rate=10, # [Hz] sampling rate in which the trigger function works (used to simulate sensor refresh rates)
+        lag=0, # [s] time between the ejection system is triggered and the parachute is fully opened (SHOULD BE QUANTIFIED WITH EJECTION TESTING)
+        noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
+    )
+
+# Add Rail Buttons to Rocket 2 (# TODO, update positions with Excel sheet values)
+DART_rocket_2_rail_buttons = DART_rocket_2.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
+
+# Add Motor to Rocket 2
+DART_rocket_2.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 2
 DART_rocket_2.add_surfaces(surfaces=DART_rocket_2_aero_surface, positions=(0,0,0))
 
-# Add Motor to Rocket 1 (position was altered from true value to make initial SM = -1.598)
-DART_rocket_2.add_motor(motors.AeroTechG25W, position=-2.32) # TODO, (update position) postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+# Apply the fins to Rocket 2 (position was altered from true value to make initial SM = -1.598 cal (as desired))
+DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,0.2485))
 
-# Print `DART_rocket_2` Information
-print("DART ROCKET 2 INFORMATION \n-------------------------", end="")
-DART_rocket_2.info()
-DART_rocket_2.draw()
+# Add Rail Buttons to Rocket 3 (# TODO, update positions with Excel sheet values)
+DART_rocket_3_rail_buttons = DART_rocket_3.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
+
+# Add Motor to Rocket 3 (position was altered from true value to make initial SM = -1.345 cal (as desired))
+DART_rocket_3.add_motor(motors.AeroTechG25W, position=-1.964) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+
+# Apply the `GenericSurface` aerodynamics to Rocket 3
+DART_rocket_3.add_surfaces(surfaces=DART_rocket_3_aero_surface, positions=(0,0,0))
+
+# If one of the following modules was executed directly: rockets.py, setup.py
+if (FILE_NAME == "rockets.py" or FILE_NAME == "setup.py"):
+    # Print `DART_rocket_1` Information
+    print("------------------------------------------------------")
+    print("DART ROCKET 1 INFORMATION (Ascent & Unpowered Descent)")
+    print("------------------------------------------------------", end="")
+    DART_rocket_1.info()
+
+    # Print `DART_rocket_2` Information
+    print("----------------------------------------------------------")
+    print("DART ROCKET 2 INFORMATION (Powered Descent w/ Legs Stowed)")
+    print("----------------------------------------------------------", end="")
+    DART_rocket_2.info()
+
+    # Print `DART_rocket_3` Information
+    print("------------------------------------------------------------")
+    print("DART ROCKET 3 INFORMATION (Powered Descent w/ Legs Deployed)")
+    print("------------------------------------------------------------", end="")
+    DART_rocket_3.info()
