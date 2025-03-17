@@ -8,6 +8,7 @@ build/
 libs/
 __pycache__/
 Results/
+simulation/6DOF/Python/tests/ascent_test_1/*.csv
 simulation/6DOF/Python/tests/ascent_test_2/*.csv
 simulation/6DOF/Python/tests/ascent_test_2/*.kml
 simulation/6DOF/Python/tests/ascent_test_2/*.txt
