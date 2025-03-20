@@ -1533,6 +1533,43 @@ class Rocket:
             sensor._attached_rockets[self] += 1
         except KeyError:
             sensor._attached_rockets[self] = 1
+    
+    def add_TVC(self, tvc_object, controller_function, sampling_rate, initial_observed_variables=None, name="TVC Controller"):
+        """
+        Adds a TVC system to the rocket and registers its controller.
+        
+        Parameters
+        ----------
+        tvc_object : TVC
+            An instance of the TVC class.
+        controller_function : callable
+            A controller function (e.g. _Controller.tvc_lqr_controller) that will be used to control the TVC.
+        sampling_rate : float
+            The sampling rate (Hz) at which the controller function will be called.
+        initial_observed_variables : list, optional
+            Initial values for observed variables.
+        name : str, optional
+            Name for the controller.
+        
+        Returns
+        -------
+        tuple
+            (TVC system, controller object)
+        """
+        self.TVC = tvc_object
+        # Register the TVC controller with the rocket’s controller list:
+        from rocketpy.control.controller import _Controller  # ensure _Controller is imported
+        tvc_controller = _Controller(
+            interactive_objects=[self.TVC, self],
+            controller_function=controller_function,
+            sampling_rate=sampling_rate,
+            initial_observed_variables=initial_observed_variables,
+            name=name
+        )
+        self._add_controllers(tvc_controller)
+        return self.TVC, tvc_controller
+
+
 
     def add_air_brakes(
         self,
