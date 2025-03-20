@@ -34,7 +34,7 @@ else: # read launch parameters from config file
     config_file_path_prefix = ""
     for ctr in range(motors.directory_levels_to_try):
         try:
-            config_file = open(config_file_path_prefix + "launch_parameters.json")
+            config_file = open(config_file_path_prefix + "launch_parameters_ascent_test_2.json")
         except (FileNotFoundError): # FileNotFoundError raised when the config file isn't found
             config_file_path_prefix += "../"
         else:
@@ -90,7 +90,7 @@ launch_site = Environment(
     date=launch_date_and_time, # launch date and time
     latitude=launch_site_latitude, # [deg] positive corresponds to North
     longitude=launch_site_longitude, # [deg] positive corresponds to East
-    elevation=4, # [m] launch site elevation above sea level
+    elevation=4, # [m] launch site elevation above sea level (# TODO, make dependent on launch location)
     timezone="EST", # specify launch site time zone
     max_expected_height=250 # [m] maximum altitude to keep weather data (must be above sea level)
 )
@@ -135,7 +135,7 @@ if (command_line_args["windmag"] != None and command_line_args["windhead"] != No
     wind_head = float(command_line_args["windhead"]) # [deg] direction in which the wind is blowing, CW from North
     wind_u = wind_mag * math.sin(math.radians(wind_head)) # [m/s] East/West component of wind velocity
     wind_v = wind_mag * math.cos(math.radians(wind_head)) # [m/s] North/South component of wind velocity
-    launch_site.process_custom_atmosphere(wind_u = wind_u, wind_v = wind_v)
+    launch_site.set_atmospheric_model(type="custom_atmosphere", wind_u = wind_u, wind_v = wind_v)
 else: # pull wind information from API
     try:
         launch_site.set_atmospheric_model(type="Forecast", file="RAP") # RAP updates hourly

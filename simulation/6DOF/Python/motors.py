@@ -34,7 +34,7 @@ for ctr in range(directory_levels_to_try):
         # Construct AeroTechG25W Solid Rocket Motor
         AeroTechG25W = SolidMotor(
             thrust_source=thrust_source_path_G25W, # [s, N]
-            dry_mass=101.72/1000, # [kg]
+            dry_mass=102.72/1000, # [kg]
             dry_inertia=(235307.21*(1000**(-3)), 235307.21*(1000**(-3)), 13414.14*(1000**(-3))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
             nozzle_radius=7.70/2/1000, # [m] nozzle exit radius
             grain_number=1, # [unitless]
@@ -56,10 +56,10 @@ for ctr in range(directory_levels_to_try):
         # Construct AeroTechG79W Solid Rocket Motor
         AeroTechG79W = SolidMotor(
             thrust_source=thrust_source_path_G79W, # [s, N]
-            dry_mass=101.72/1000, # [kg]
+            dry_mass=97/1000, # [kg]
             dry_inertia=(235307.21*(1000**(-3)), 235307.21*(1000**(-3)), 13414.14*(1000**(-3))), # [kg*m^2] motor's dry mass inertia tensor components (e_3 = rocket symmetry axis)
             nozzle_radius=7.70/2/1000, # [m] nozzle exit radius
-            grain_number=1, # [unitless]
+            grain_number=1, # [unitless] (# TODO, G79 has two grains)
             grain_density=propellant_mass_G79W/(propellant_length_G25W*(math.pi*(propellant_OD_G25W/2)**2 - math.pi*(propellant_ID_G25W/2)**2)), # [kg/m^2]
             grain_outer_radius=propellant_OD_G25W/2, # [m]
             grain_initial_inner_radius=propellant_ID_G25W/2, # [m]

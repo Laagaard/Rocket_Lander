@@ -10,13 +10,12 @@ import motors
 FILE_NAME = sys.argv[0][2:] # [str] name of the module executed on the command line
 
 # Rocket 1 Characteristics
-total_mass_rocket_1 = 1.431 # [kg] total wet mass of rocket (launch configuration)
-motor_mass_rocket_1 = motors.AeroTechG25W.propellant_initial_mass + motors.AeroTechG25W.dry_mass # [kg] total mass of ONE motor
+total_mass_rocket_1 = 1.29658 # [kg] total wet mass of rocket (launch configuration)
 
 # Construct Rocket 1 (for ascent and unpowered descent flight phases)
 DART_rocket_1 = Rocket(
     radius=80.73/1000, # [m] largest outer radius
-    mass=total_mass_rocket_1 - motor_mass_rocket_1, # [kg] dry mass of the rocket
+    mass=1.29658, # [kg] dry mass of the rocket (# TODO, corroborate with true value once Rylen updates the Excel sheet)
     inertia=(0.046172709, 0.046138602, 0.001703419, -1.53675E-05, -2.59173E-05, 3.91814E-05), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
     power_off_drag=0.456, # [unitless] C_D without motor firing
     power_on_drag=0.456, # [unitless] C_D with motor firing
@@ -244,10 +243,10 @@ for ctr in range(motors.directory_levels_to_try):
             n=3, # [unitless] number of fins
             root_chord=0.125223, # [m]
             tip_chord=0.062611, # [m]
-            span=0.0848, # [m] v1: 0.08636
+            span=0.08636, # [m]
             rocket_radius=DART_rocket_1.radius, # [m] reference radius to calculate lift coefficient
             cant_angle=0, # [deg] cant (i.e., tilt) angle of fins (non-zero will induce roll)
-            sweep_angle=-0.001, # [deg] fins sweep angle with respect to the rocket centerline
+            # sweep_angle=-0.001, # [deg] fins sweep angle with respect to the rocket centerline
             airfoil=(fin_airfoil_source_path, "degrees") # [CSV of {alpha,C_L}, alpha provided in degrees]
         )
     except (ValueError): # ValueError raised when the CSV file isn't found
@@ -312,8 +311,8 @@ DART_rocket_2.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] 
 # Apply the `GenericSurface` aerodynamics to Rocket 2
 DART_rocket_2.add_surfaces(surfaces=DART_rocket_2_aero_surface, positions=(0,0,0))
 
-# Apply the fins to Rocket 2 (position was altered from true value to make initial SM = -1.598 cal (as desired))
-DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,0.2485))
+# Apply the fins to Rocket 2 (position was altered from true value to make initial SM = 1.598 cal (as desired))
+DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,-0.2393))
 
 # Add Rail Buttons to Rocket 3 (# TODO, update positions with Excel sheet values)
 DART_rocket_3_rail_buttons = DART_rocket_3.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
@@ -343,6 +342,7 @@ if (FILE_NAME == "rockets.py" or FILE_NAME == "setup.py"):
     print("DART ROCKET 2 INFORMATION (Powered Descent w/ Legs Stowed)")
     print("----------------------------------------------------------", end="")
     DART_rocket_2.info()
+    DART_rocket_2.draw()
 
     # Print `DART_rocket_3` Information
     print("------------------------------------------------------------")
