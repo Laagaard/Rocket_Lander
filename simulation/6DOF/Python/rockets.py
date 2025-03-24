@@ -342,7 +342,6 @@ if (FILE_NAME == "rockets.py" or FILE_NAME == "setup.py"):
     print("DART ROCKET 2 INFORMATION (Powered Descent w/ Legs Stowed)")
     print("----------------------------------------------------------", end="")
     DART_rocket_2.info()
-    DART_rocket_2.draw()
 
     # Print `DART_rocket_3` Information
     print("------------------------------------------------------------")
