@@ -15,8 +15,8 @@ total_mass_rocket_1 = 1.29658 # [kg] total wet mass of rocket (launch configurat
 # Construct Rocket 1 (for ascent and unpowered descent flight phases)
 DART_rocket_1 = Rocket(
     radius=80.73/1000, # [m] largest outer radius
-    mass=1.29658, # [kg] dry mass of the rocket (# TODO, corroborate with true value once Rylen updates the Excel sheet)
-    inertia=(0.046172709, 0.046138602, 0.001703419, -1.53675E-05, -2.59173E-05, 3.91814E-05), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
+    mass=1.30407, # [kg] dry mass of the rocket
+    inertia=(0.051436009, 0.051425384, 0.001652708, -8.69868E-06, 7.86959E-05, 2.51393E-05), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
     power_off_drag=0.456, # [unitless] C_D without motor firing
     power_on_drag=0.456, # [unitless] C_D with motor firing
     center_of_mass_without_motor=0, # [m] position of the rocket CG w/o motors relative to the rocket's coordinate system
@@ -88,7 +88,15 @@ DART_rocket_1_aero_surface = GenericSurface(
 )
 
 # Construct Rocket 2 (for powered descent phase w/ legs stowed)
-DART_rocket_2 = copy.deepcopy(x=DART_rocket_1) # create an independent copy (changes to the copy do not affect the original)
+DART_rocket_2 = Rocket(
+    radius=80.73/1000, # [m] largest outer radius
+    mass=1.17338, # [kg] dry mass of the rocket
+    inertia=(0.044796856, 0.044786237, 0.001591828, -8.51895E-06, 8.6566E-05, 1.257E-05), # [kg*m^2] rocket inertia tensor components (e_3 = rocket symmetry axis)
+    power_off_drag=0.456, # [unitless] C_D without motor firing
+    power_on_drag=0.456, # [unitless] C_D with motor firing
+    center_of_mass_without_motor=0, # [m] position of the rocket CG w/o motors relative to the rocket's coordinate system
+    coordinate_system_orientation="tail_to_nose" # direction of positive coordinate system axis
+)
 
 def lift_coefficient_rocket_2(alpha, beta, Ma, Re, q, r, p):
     '''
@@ -272,16 +280,16 @@ DART_nose = NoseCone(
 upper_button_position: # [m] position of the rail button furthest from the nozzle relative to the rocket's coordinate system
 lower_button_position: # [m] position of the rail button closest to the nozzle relative to the rocket's coordinate system
 '''
-DART_rocket_1_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
+DART_rocket_1_rail_buttons = DART_rocket_1.set_rail_buttons(upper_button_position=-0.037057, lower_button_position=-0.189457)
 
 # Add Motor to Rocket 1
-DART_rocket_1.add_motor(motors.AeroTechG79W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+DART_rocket_1.add_motor(motors.AeroTechG79W, position=-0.393027) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 1
 DART_rocket_1.add_surfaces(surfaces=DART_rocket_1_aero_surface, positions=(0,0,0))
 
-# Apply the fins to Rocket 1 (position was altered from true value to make initial SM = 1.066 cal (as desired))
-DART_rocket_1.add_surfaces(surfaces=DART_fins_rocket_1, positions=(0,0,-0.1532))
+# Apply the fins to Rocket 1 (position was altered from true value (0.265963) to make initial SM = 1.066 cal (as desired))
+DART_rocket_1.add_surfaces(surfaces=DART_fins_rocket_1, positions=(0,0,-0.1543))
 
 # Apply the parachute to Rocket 1 (per command line arguments or JSON file)
 if (launch_site.parachute_flag):
@@ -299,20 +307,17 @@ if (launch_site.parachute_flag):
         noise=(0,0,0) # [Pa] (mean, standard deviation, time-correlation) used to add noise to the pressure signal
     )
 
-# Add Rail Buttons to Rocket 2 (# TODO, update positions with Excel sheet values)
-DART_rocket_2_rail_buttons = DART_rocket_2.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
+# Add Rail Buttons to Rocket 2
+DART_rocket_2_rail_buttons = DART_rocket_2.set_rail_buttons(upper_button_position=0.02549, lower_button_position=-0.126908)
 
-# TODO
-# 1) Update position with Excel sheet value
-# 2) Adjust the CP location to get correct initial SM (-1.598)
 # Add Motor to Rocket 2
-DART_rocket_2.add_motor(motors.AeroTechG25W, position=-0.366905) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
+DART_rocket_2.add_motor(motors.AeroTechG25W, position=-0.33678) # postion: [m] Position of the motor's coordinate system origin relative to the user defined rocket coordinate system
 
 # Apply the `GenericSurface` aerodynamics to Rocket 2
 DART_rocket_2.add_surfaces(surfaces=DART_rocket_2_aero_surface, positions=(0,0,0))
 
-# Apply the fins to Rocket 2 (position was altered from true value to make initial SM = 1.598 cal (as desired))
-DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,-0.2393))
+# Apply the fins to Rocket 2 (position was altered from true value (0.203415) to make initial SM = 1.598 cal (as desired))
+DART_rocket_2.add_surfaces(surfaces=DART_fins_rocket_2, positions=(0,0,-0.2386))
 
 # Add Rail Buttons to Rocket 3 (# TODO, update positions with Excel sheet values)
 DART_rocket_3_rail_buttons = DART_rocket_3.set_rail_buttons(upper_button_position=-0.027064, lower_button_position=-0.179464)
