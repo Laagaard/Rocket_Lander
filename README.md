@@ -10,3 +10,5 @@ The following is the list of sub-projects included in this project and their res
 - `ground_station`: contains materials related to the <u>legacy</u> ground station (since replaced by [XCTU](https://www.digi.com/products/embedded-systems/digi-xbee/digi-xbee-tools/xctu))
 - `simulation`: contains materials related to and used for flight simulation and trajectory/mission planning
 - `static_fire_test`: contains files used to collect thrust data during the static fire tests along with the actual data from the tests
+
+- archived: 09/19/2025
